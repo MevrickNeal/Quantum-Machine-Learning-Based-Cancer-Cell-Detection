@@ -1,186 +1,136 @@
 /**
- * Quantum Blood Cancer Detection — Frontend Application
- *
- * Connects to FastAPI backend on port 8888.
- * Falls back to static data/metrics.json when API is offline.
+ * Quantum Blood Cancer Detection — Frontend v2
+ * macOS Ventura theme · Day/Night · Blood smear cell detection
  */
 
 const API = "http://127.0.0.1:8888";
 let apiOnline = false;
 let metricsData = null;
 let clinicalMeta = null;
-let currentRiskResult = null;
-
-// ─── API helpers ────────────────────────────────────────────────────────────
-
-async function apiFetch(path, opts = {}) {
-  const res = await fetch(`${API}${path}`, { ...opts, signal: AbortSignal.timeout(8000) });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
-}
 
 // ─── Init ────────────────────────────────────────────────────────────────────
 
 document.addEventListener("DOMContentLoaded", async () => {
+  initTheme();
   initParticleCanvas();
   initScrollAnimations();
   await checkApiHealth();
-  await Promise.all([
-    loadMetrics(),
-    loadClinicalMeta(),
-    loadShapData(),
-  ]);
+  await Promise.all([loadMetrics(), loadClinicalMeta(), loadShapData()]);
   setupFormEvents();
+  initSmearAnalysis();
 });
 
-// ─── API Health ──────────────────────────────────────────────────────────────
+// ─── Theme (Day / Night) ─────────────────────────────────────────────────────
+
+function initTheme() {
+  const saved = localStorage.getItem("qml-theme") || "dark";
+  applyTheme(saved);
+  document.getElementById("themeToggle")?.addEventListener("click", () => {
+    const current = document.documentElement.getAttribute("data-theme");
+    applyTheme(current === "dark" ? "light" : "dark");
+  });
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  localStorage.setItem("qml-theme", theme);
+  const icon  = document.getElementById("themeIcon");
+  const label = document.getElementById("themeLabel");
+  if (icon)  icon.textContent  = theme === "dark" ? "☀️" : "🌙";
+  if (label) label.textContent = theme === "dark" ? "Day" : "Night";
+}
+
+// ─── API ─────────────────────────────────────────────────────────────────────
+
+async function apiFetch(path, opts = {}) {
+  const res = await fetch(`${API}${path}`, { ...opts, signal: AbortSignal.timeout(7000) });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
 
 async function checkApiHealth() {
-  const dot  = document.getElementById("api-dot");
-  const text = document.getElementById("api-status-text");
+  const dot = document.getElementById("api-dot");
+  const txt = document.getElementById("api-status-text");
   try {
     const h = await apiFetch("/health");
     apiOnline = true;
-    dot.className  = "api-dot online";
-    text.textContent = "API Online" + (h.clinical_model_loaded ? " · Model Ready" : " · Run train.py");
+    if (dot) dot.className = "api-dot online";
+    if (txt) txt.textContent = "API Online" + (h.clinical_model_loaded ? " · Model Ready" : "");
   } catch {
-    apiOnline = false;
-    dot.className  = "api-dot offline";
-    text.textContent = "API Offline — using static data";
+    if (dot) dot.className = "api-dot offline";
+    if (txt) txt.textContent = "API Offline — using static data";
   }
 }
 
-// ─── Metrics / Comparison ────────────────────────────────────────────────────
+// ─── Metrics ─────────────────────────────────────────────────────────────────
 
 async function loadMetrics() {
   let data = null;
-
-  if (apiOnline) {
-    try { data = await apiFetch("/metrics"); } catch {}
-  }
-  if (!data) {
-    try {
-      const res = await fetch("./data/metrics.json");
-      data = await res.json();
-    } catch { return; }
-  }
-
+  if (apiOnline) { try { data = await apiFetch("/metrics"); } catch {} }
+  if (!data) { try { const r = await fetch("./data/metrics.json"); data = await r.json(); } catch { return; } }
   metricsData = data;
   populateKpis(data);
   populateComparisonTable(data);
   populateQuantumMetrics(data);
-  showComparisonContent();
+  document.getElementById("comparison-loading").hidden = true;
+  document.getElementById("comparison-content").hidden = false;
 }
 
 function populateKpis(data) {
   const info = data.dataset_info || {};
-  animateCounter("#kpi-samples .kpi-value",  info.n_samples           || 72);
-  animateCounter("#kpi-genes .kpi-value",     info.n_features_raw      || 7129);
-  animateCounter("#kpi-models .kpi-value",    Object.keys(data.all_model_metrics || {}).length || 8);
-  animateCounter("#kpi-qubits .kpi-value",    data.n_qubits            || 4);
-
-  // Best AUC
+  animCounter("#kpi-strip .kpi-card:nth-child(1) .kpi-value", info.n_samples     || 72);
+  animCounter("#kpi-strip .kpi-card:nth-child(2) .kpi-value", info.n_features_raw|| 7129);
+  animCounter("#kpi-strip .kpi-card:nth-child(3) .kpi-value", Object.keys(data.all_model_metrics||{}).length || 5);
+  animCounter("#kpi-strip .kpi-card:nth-child(5) .kpi-value", data.n_qubits || 4);
   const allM = data.all_model_metrics || {};
   let bestAuc = 0;
-  Object.values(allM).forEach(m => { if ((m.roc_auc || 0) > bestAuc) bestAuc = m.roc_auc; });
-  const aucEl = document.getElementById("kpi-best-auc");
-  if (aucEl) { aucEl.textContent = bestAuc > 0 ? bestAuc.toFixed(3) : "—"; }
-}
-
-function showComparisonContent() {
-  const loading = document.getElementById("comparison-loading");
-  const content = document.getElementById("comparison-content");
-  if (loading) loading.hidden = true;
-  if (content) content.hidden = false;
+  Object.values(allM).forEach(m => { if ((m.roc_auc||0) > bestAuc) bestAuc = m.roc_auc; });
+  const el = document.getElementById("kpi-best-auc");
+  if (el) el.textContent = bestAuc > 0 ? bestAuc.toFixed(3) : "—";
 }
 
 function populateComparisonTable(data) {
   const tbody = document.getElementById("metrics-tbody");
   if (!tbody) return;
-
   const classical = data.models?.classical || {};
-  const quantumQ  = data.models?.quantum_qiskit || {};
+  const quantumQ  = data.models?.quantum_qiskit   || {};
   const quantumPL = data.models?.quantum_pennylane;
-
-  // Find best per-column values
-  const allMets = data.all_model_metrics || {};
+  const allM = data.all_model_metrics || {};
   const bestVals = {};
   ["accuracy","precision","recall","f1","roc_auc"].forEach(k => {
-    let best = 0;
-    Object.values(allMets).forEach(m => { if ((m[k]||0) > best) best = m[k]; });
-    bestVals[k] = best;
+    let b = 0; Object.values(allM).forEach(m => { if ((m[k]||0) > b) b = m[k]; }); bestVals[k] = b;
   });
-
   const rows = [];
-
-  Object.entries(classical).forEach(([name, m]) => {
-    rows.push({ name, m, type: "Classical" });
-  });
-  Object.entries(quantumQ).forEach(([name, res]) => {
-    if (res?.status === "ok" && res.metrics)
-      rows.push({ name, m: res.metrics, type: "Quantum (Qiskit)" });
-  });
-  if (quantumPL?.status === "ok" && quantumPL.metrics)
-    rows.push({ name: "PennyLane QNN", m: quantumPL.metrics, type: "Quantum (PennyLane)" });
-
-  tbody.innerHTML = rows.map(({ name, m, type }) => {
-    const typeClass = type.startsWith("Quantum") ? "model-type-quantum" : "model-type-classical";
-    const fmt = (v, k) => {
-      const s = typeof v === "number" ? v.toFixed(4) : "—";
-      const isBest = typeof v === "number" && Math.abs(v - bestVals[k]) < 0.0001;
-      return isBest ? `<span class="best-cell">${s} ✓</span>` : s;
+  Object.entries(classical).forEach(([n,m]) => rows.push({name:n, m, type:"Classical"}));
+  Object.entries(quantumQ).forEach(([n,r]) => { if (r?.status==="ok"&&r.metrics) rows.push({name:n, m:r.metrics, type:"Quantum (Qiskit)"}); });
+  if (quantumPL?.status==="ok"&&quantumPL.metrics) rows.push({name:"PennyLane QNN", m:quantumPL.metrics, type:"Quantum (PennyLane)"});
+  tbody.innerHTML = rows.map(({name,m,type}) => {
+    const tc = type.startsWith("Q") ? "model-type-quantum" : "model-type-classical";
+    const f = (v,k) => {
+      const s = typeof v==="number" ? v.toFixed(4) : "—";
+      return typeof v==="number" && Math.abs(v - bestVals[k]) < .0001 ? `<span class="best-cell">${s} ✓</span>` : s;
     };
-    return `<tr>
-      <td><strong>${name}</strong></td>
-      <td><span class="${typeClass}">${type}</span></td>
-      <td>${fmt(m.accuracy,  "accuracy")}</td>
-      <td>${fmt(m.precision, "precision")}</td>
-      <td>${fmt(m.recall,    "recall")}</td>
-      <td>${fmt(m.f1,        "f1")}</td>
-      <td>${fmt(m.roc_auc,   "roc_auc")}</td>
-    </tr>`;
+    return `<tr><td><strong>${name}</strong></td><td><span class="${tc}">${type}</span></td><td>${f(m.accuracy,"accuracy")}</td><td>${f(m.precision,"precision")}</td><td>${f(m.recall,"recall")}</td><td>${f(m.f1,"f1")}</td><td>${f(m.roc_auc,"roc_auc")}</td></tr>`;
   }).join("");
 }
 
 function populateQuantumMetrics(data) {
-  const quantumQ  = data.models?.quantum_qiskit || {};
-  const quantumPL = data.models?.quantum_pennylane;
-
-  function setMetrics(id, m) {
-    const el = document.getElementById(id);
-    if (!el || !m) return;
-    el.innerHTML = [
-      `<span class="im-badge">Acc <span>${(m.accuracy||0).toFixed(3)}</span></span>`,
-      `<span class="im-badge">F1 <span>${(m.f1||0).toFixed(3)}</span></span>`,
-      `<span class="im-badge">AUC <span>${(m.roc_auc||0).toFixed(3)}</span></span>`,
-    ].join("");
-  }
-
-  const vqc  = quantumQ["VQC (Qiskit)"];
-  const qsvm = quantumQ["QSVM (Quantum Kernel)"];
-
-  setMetrics("vqc-metrics",  vqc?.status  === "ok" ? vqc.metrics  : null);
-  setMetrics("qsvm-metrics", qsvm?.status === "ok" ? qsvm.metrics : null);
-  setMetrics("pl-metrics",   quantumPL?.status === "ok" ? quantumPL.metrics : null);
-
-  // Confusion matrix images
-  const cmGrid = document.getElementById("cm-grid");
-  if (!cmGrid) return;
-  const cmNames = Object.entries(quantumQ)
-    .filter(([, r]) => r?.status === "ok")
-    .map(([n]) => n);
-  if (data.best_classical?.name) cmNames.unshift(data.best_classical.name);
-
-  cmGrid.innerHTML = cmNames.map(name => {
-    const safe = name.toLowerCase().replace(/[\s()]/g, n => n === " " ? "_" : "");
-    const src  = apiOnline
-      ? `${API}/assets/cm_${safe}.png`
-      : `./assets/cm_${safe}.png`;
-    return `<div class="glass-card cm-card">
-      <h4>${name}</h4>
-      <img src="${src}" alt="Confusion matrix ${name}" class="chart-img"
-           onerror="this.style.display='none'" />
-    </div>`;
+  const qQ  = data.models?.quantum_qiskit   || {};
+  const qPL = data.models?.quantum_pennylane;
+  const fmt = (m,id) => {
+    const el = document.getElementById(id); if (!el||!m) return;
+    el.innerHTML = [`Acc <span>${(m.accuracy||0).toFixed(3)}</span>`,`F1 <span>${(m.f1||0).toFixed(3)}</span>`,`AUC <span>${(m.roc_auc||0).toFixed(3)}</span>`].map(s=>`<span class="im-badge">${s}</span>`).join("");
+  };
+  fmt(qQ["VQC (Qiskit)"]?.metrics,  "vqc-metrics");
+  fmt(qQ["QSVM (Quantum Kernel)"]?.metrics, "qsvm-metrics");
+  fmt(qPL?.metrics, "pl-metrics");
+  const cmGrid = document.getElementById("cm-grid"); if (!cmGrid) return;
+  const names = ["Logistic Regression"];
+  Object.entries(qQ).filter(([,r])=>r?.status==="ok").forEach(([n])=>names.push(n));
+  cmGrid.innerHTML = names.map(n=>{
+    const safe = n.toLowerCase().replace(/[\s()]/g,c=>c===" ?"?"_":"");
+    const src  = `./assets/cm_${safe}.png`;
+    return `<div class="glass-card cm-card"><h4>${n}</h4><img src="${src}" alt="CM ${n}" class="chart-img" onerror="this.style.display='none'"/></div>`;
   }).join("");
 }
 
@@ -188,433 +138,498 @@ function populateQuantumMetrics(data) {
 
 async function loadShapData() {
   let shap = null;
-  if (apiOnline) {
-    try { shap = await apiFetch("/shap"); } catch {}
-  }
-  if (!shap) {
-    try {
-      const res = await fetch("./data/shap_importances.json");
-      shap = await res.json();
-    } catch { return; }
-  }
-
-  const imps = shap.shap_importances || {};
-  const sorted = Object.entries(imps).sort((a, b) => b[1] - a[1]).slice(0, 10);
-  const maxVal = sorted[0]?.[1] || 1;
-
-  const container = document.getElementById("shap-top-list");
-  if (!container) return;
-  container.innerHTML = sorted.map(([gene, val]) =>
-    `<div class="shap-gene-row">
-      <span class="shap-gene-name">${gene}</span>
-      <div class="shap-bar-wrap">
-        <div class="shap-bar-fill" style="width:${(val/maxVal*100).toFixed(1)}%"></div>
-      </div>
-      <span class="shap-val">${val.toFixed(4)}</span>
-    </div>`
-  ).join("");
+  if (apiOnline) { try { shap = await apiFetch("/shap"); } catch {} }
+  if (!shap) { try { const r = await fetch("./data/shap_importances.json"); shap = await r.json(); } catch { return; } }
+  const imps   = shap.shap_importances || {};
+  const sorted = Object.entries(imps).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const maxV   = sorted[0]?.[1] || 1;
+  const c = document.getElementById("shap-top-list"); if (!c) return;
+  c.innerHTML = sorted.map(([g,v])=>`<div class="shap-gene-row"><span class="shap-gene-name">${g}</span><div class="shap-bar-wrap"><div class="shap-bar-fill" style="width:${(v/maxV*100).toFixed(1)}%"></div></div><span class="shap-val">${v.toFixed(4)}</span></div>`).join("");
 }
 
 // ─── Clinical Meta + Form ─────────────────────────────────────────────────────
 
 async function loadClinicalMeta() {
-  if (apiOnline) {
-    try { clinicalMeta = await apiFetch("/clinical/meta"); } catch {}
-  }
+  if (apiOnline) { try { clinicalMeta = await apiFetch("/clinical/meta"); } catch {} }
   if (!clinicalMeta) {
-    // Hard-coded defaults matching clinical_model.py
     clinicalMeta = {
-      feature_names: ["WBC (K/µL)","RBC (M/µL)","Hemoglobin (g/dL)","Hematocrit (%)","MCV (fL)","MCH (pg)","MCHC (g/dL)","Platelets (K/µL)","Neutrophils (%)","Lymphocytes (%)","Monocytes (%)","Eosinophils (%)","Basophils (%)","Blast Cells (%)"],
-      feature_ranges: {"WBC (K/µL)":[0.1,500],"RBC (M/µL)":[1,7],"Hemoglobin (g/dL)":[3,22],"Hematocrit (%)":[10,62],"MCV (fL)":[50,125],"MCH (pg)":[15,42],"MCHC (g/dL)":[20,40],"Platelets (K/µL)":[5,1000],"Neutrophils (%)":[0,95],"Lymphocytes (%)":[0,98],"Monocytes (%)":[0,30],"Eosinophils (%)":[0,20],"Basophils (%)":[0,5],"Blast Cells (%)":[0,99]},
-      normal_defaults: {"WBC (K/µL)":7.5,"RBC (M/µL)":4.8,"Hemoglobin (g/dL)":14,"Hematocrit (%)":42,"MCV (fL)":90,"MCH (pg)":30,"MCHC (g/dL)":34,"Platelets (K/µL)":260,"Neutrophils (%)":58,"Lymphocytes (%)":28,"Monocytes (%)":6,"Eosinophils (%)":3,"Basophils (%)":0.8,"Blast Cells (%)":0.3},
-      reference_ranges: {"WBC (K/µL)":{"min":4.5,"max":11},"RBC (M/µL)":{"min":3.8,"max":6},"Hemoglobin (g/dL)":{"min":11.5,"max":17.5},"Hematocrit (%)":{"min":35,"max":52},"MCV (fL)":{"min":80,"max":100},"MCH (pg)":{"min":27,"max":33},"MCHC (g/dL)":{"min":31.5,"max":36},"Platelets (K/µL)":{"min":150,"max":400},"Neutrophils (%)":{"min":40,"max":75},"Lymphocytes (%)":{"min":20,"max":45},"Monocytes (%)":{"min":2,"max":10},"Eosinophils (%)":{"min":1,"max":6},"Basophils (%)":{"min":0,"max":1},"Blast Cells (%)":{"min":0,"max":2}},
+      feature_names:["WBC (K/µL)","RBC (M/µL)","Hemoglobin (g/dL)","Hematocrit (%)","MCV (fL)","MCH (pg)","MCHC (g/dL)","Platelets (K/µL)","Neutrophils (%)","Lymphocytes (%)","Monocytes (%)","Eosinophils (%)","Basophils (%)","Blast Cells (%)"],
+      feature_ranges:{"WBC (K/µL)":[0.1,500],"RBC (M/µL)":[1,7],"Hemoglobin (g/dL)":[3,22],"Hematocrit (%)":[10,62],"MCV (fL)":[50,125],"MCH (pg)":[15,42],"MCHC (g/dL)":[20,40],"Platelets (K/µL)":[5,1000],"Neutrophils (%)":[0,95],"Lymphocytes (%)":[0,98],"Monocytes (%)":[0,30],"Eosinophils (%)":[0,20],"Basophils (%)":[0,5],"Blast Cells (%)":[0,99]},
+      normal_defaults:{"WBC (K/µL)":7.5,"RBC (M/µL)":4.8,"Hemoglobin (g/dL)":14,"Hematocrit (%)":42,"MCV (fL)":90,"MCH (pg)":30,"MCHC (g/dL)":34,"Platelets (K/µL)":260,"Neutrophils (%)":58,"Lymphocytes (%)":28,"Monocytes (%)":6,"Eosinophils (%)":3,"Basophils (%)":0.8,"Blast Cells (%)":0.3},
+      reference_ranges:{"WBC (K/µL)":{min:4.5,max:11},"RBC (M/µL)":{min:3.8,max:6},"Hemoglobin (g/dL)":{min:11.5,max:17.5},"Hematocrit (%)":{min:35,max:52},"MCV (fL)":{min:80,max:100},"MCH (pg)":{min:27,max:33},"MCHC (g/dL)":{min:31.5,max:36},"Platelets (K/µL)":{min:150,max:400},"Neutrophils (%)":{min:40,max:75},"Lymphocytes (%)":{min:20,max:45},"Monocytes (%)":{min:2,max:10},"Eosinophils (%)":{min:1,max:6},"Basophils (%)":{min:0,max:1},"Blast Cells (%)":{min:0,max:2}},
     };
   }
   buildScreeningForm();
 }
 
-const FIELD_KEYS = {
-  "WBC (K/µL)":        "wbc",
-  "RBC (M/µL)":        "rbc",
-  "Hemoglobin (g/dL)": "hemoglobin",
-  "Hematocrit (%)":    "hematocrit",
-  "MCV (fL)":          "mcv",
-  "MCH (pg)":          "mch",
-  "MCHC (g/dL)":       "mchc",
-  "Platelets (K/µL)":  "platelets",
-  "Neutrophils (%)":   "neutrophils",
-  "Lymphocytes (%)":   "lymphocytes",
-  "Monocytes (%)":     "monocytes",
-  "Eosinophils (%)":   "eosinophils",
-  "Basophils (%)":     "basophils",
-  "Blast Cells (%)":   "blast_cells",
-};
+const FIELD_KEYS = {"WBC (K/µL)":"wbc","RBC (M/µL)":"rbc","Hemoglobin (g/dL)":"hemoglobin","Hematocrit (%)":"hematocrit","MCV (fL)":"mcv","MCH (pg)":"mch","MCHC (g/dL)":"mchc","Platelets (K/µL)":"platelets","Neutrophils (%)":"neutrophils","Lymphocytes (%)":"lymphocytes","Monocytes (%)":"monocytes","Eosinophils (%)":"eosinophils","Basophils (%)":"basophils","Blast Cells (%)":"blast_cells"};
 
 function buildScreeningForm() {
-  const form = document.getElementById("screening-form");
-  if (!form || !clinicalMeta) return;
-
-  const features = clinicalMeta.feature_names || [];
-  const ranges   = clinicalMeta.feature_ranges || {};
-  const defaults = clinicalMeta.normal_defaults || {};
-  const refs     = clinicalMeta.reference_ranges || {};
-
-  form.innerHTML = `<div class="cbc-grid">${features.map(feat => {
-    const [lo, hi] = ranges[feat] || [0, 100];
-    const def = defaults[feat] ?? ((lo + hi) / 2);
-    const id  = "cbc_" + feat.replace(/[^a-z0-9]/gi, "_");
-    const ref = refs[feat] || {};
-    const refStr = ref.min !== undefined
-      ? `Normal: ${ref.min}–${ref.max}`
-      : "";
+  const form = document.getElementById("screening-form"); if (!form||!clinicalMeta) return;
+  const {feature_names:feats,feature_ranges:ranges,normal_defaults:defs,reference_ranges:refs} = clinicalMeta;
+  form.innerHTML = `<div class="cbc-grid">${feats.map(feat=>{
+    const [lo,hi] = ranges[feat]||[0,100];
+    const def = defs[feat]??((lo+hi)/2);
+    const id  = "cbc_"+feat.replace(/[^a-z0-9]/gi,"_");
+    const ref = refs[feat]||{};
+    const refStr = ref.min!==undefined ? `Normal: ${ref.min}–${ref.max}` : "";
+    const step = (hi-lo)<=5?0.1:(hi-lo)<=50?0.5:1;
     return `<div class="cbc-row" title="${refStr}">
-      <label for="${id}">${feat} <span style="color:var(--text-muted);font-weight:400">${refStr}</span></label>
+      <label for="${id}_range">${feat} <span class="cbc-ref">${refStr}</span></label>
       <div class="cbc-input-inline">
-        <input type="range" id="${id}_range"
-               min="${lo}" max="${hi}" step="${stepFor(lo, hi)}"
-               value="${def}"
-               data-feature="${feat}"
-               oninput="syncNum(this, '${id}_num')" />
+        <input type="range" id="${id}_range" min="${lo}" max="${hi}" step="${step}" value="${def}" data-feature="${feat}" oninput="syncNum(this,'${id}_num')"/>
         <span class="num-display" id="${id}_num">${def}</span>
-        <span class="unit-label">${feat.match(/\(([^)]+)\)/)?.[1] || ""}</span>
+        <span class="unit-label">${(feat.match(/\(([^)]+)\)/)||[])[1]||""}</span>
       </div>
     </div>`;
   }).join("")}</div>`;
 }
 
-function stepFor(lo, hi) {
-  const range = hi - lo;
-  if (range <= 5) return 0.1;
-  if (range <= 50) return 0.5;
-  return 1;
-}
-
-function syncNum(rangeEl, numId) {
-  const numEl = document.getElementById(numId);
-  if (numEl) numEl.textContent = parseFloat(rangeEl.value).toFixed(1);
+function syncNum(el, numId) {
+  const n = document.getElementById(numId);
+  if (n) n.textContent = parseFloat(el.value).toFixed(1);
 }
 
 function readFormValues() {
-  const result = {};
-  const form = document.getElementById("screening-form");
-  if (!form) return result;
+  const out = {}; const form = document.getElementById("screening-form"); if (!form) return out;
   form.querySelectorAll('input[type="range"]').forEach(el => {
-    const feat = el.dataset.feature;
-    const key  = FIELD_KEYS[feat];
-    if (key) result[key] = parseFloat(el.value);
-  });
-  return result;
+    const k = FIELD_KEYS[el.dataset.feature]; if (k) out[k] = parseFloat(el.value);
+  }); return out;
 }
 
-function resetFormToDefaults() {
+function resetForm() {
   if (!clinicalMeta) return;
-  const defaults = clinicalMeta.normal_defaults || {};
-  const form = document.getElementById("screening-form");
-  if (!form) return;
-  form.querySelectorAll('input[type="range"]').forEach(el => {
-    const feat = el.dataset.feature;
-    if (feat && defaults[feat] !== undefined) {
-      el.value = defaults[feat];
-      const numId = el.id.replace("_range", "_num");
-      const numEl = document.getElementById(numId);
-      if (numEl) numEl.textContent = parseFloat(defaults[feat]).toFixed(1);
+  const defs = clinicalMeta.normal_defaults||{};
+  document.getElementById("screening-form")?.querySelectorAll('input[type="range"]').forEach(el => {
+    const feat = el.dataset.feature; if (feat && defs[feat]!==undefined) {
+      el.value = defs[feat];
+      const n = document.getElementById(el.id.replace("_range","_num"));
+      if (n) n.textContent = parseFloat(defs[feat]).toFixed(1);
     }
   });
 }
 
 function loadHighRiskDemo() {
-  const highRisk = {
-    "WBC (K/µL)":        120.0,
-    "RBC (M/µL)":        2.5,
-    "Hemoglobin (g/dL)": 7.0,
-    "Hematocrit (%)":    21.0,
-    "MCV (fL)":          85.0,
-    "MCH (pg)":          28.0,
-    "MCHC (g/dL)":       33.0,
-    "Platelets (K/µL)":  35.0,
-    "Neutrophils (%)":   8.0,
-    "Lymphocytes (%)":   78.0,
-    "Monocytes (%)":     9.0,
-    "Eosinophils (%)":   1.5,
-    "Basophils (%)":     1.2,
-    "Blast Cells (%)":   62.0,
-  };
-  const form = document.getElementById("screening-form");
-  if (!form) return;
-  form.querySelectorAll('input[type="range"]').forEach(el => {
-    const feat = el.dataset.feature;
-    if (feat && highRisk[feat] !== undefined) {
-      const val = Math.min(parseFloat(el.max), Math.max(parseFloat(el.min), highRisk[feat]));
+  const vals = {"WBC (K/µL)":120,"RBC (M/µL)":2.5,"Hemoglobin (g/dL)":7,"Hematocrit (%)":21,"MCV (fL)":85,"MCH (pg)":28,"MCHC (g/dL)":33,"Platelets (K/µL)":35,"Neutrophils (%)":8,"Lymphocytes (%)":78,"Monocytes (%)":9,"Eosinophils (%)":1.5,"Basophils (%)":1.2,"Blast Cells (%)":62};
+  document.getElementById("screening-form")?.querySelectorAll('input[type="range"]').forEach(el => {
+    const feat = el.dataset.feature; if (feat && vals[feat]!==undefined) {
+      const val = Math.min(parseFloat(el.max),Math.max(parseFloat(el.min),vals[feat]));
       el.value = val;
-      const numId = el.id.replace("_range", "_num");
-      const numEl = document.getElementById(numId);
-      if (numEl) numEl.textContent = val.toFixed(1);
+      const n = document.getElementById(el.id.replace("_range","_num"));
+      if (n) n.textContent = val.toFixed(1);
     }
   });
 }
 
 function setupFormEvents() {
-  document.getElementById("btn-analyze")?.addEventListener("click", runAnalysis);
-  document.getElementById("btn-reset")?.addEventListener("click",   resetFormToDefaults);
+  document.getElementById("btn-analyze")?.addEventListener("click",  runAnalysis);
+  document.getElementById("btn-reset")?.addEventListener("click",    resetForm);
   document.getElementById("btn-demo-high")?.addEventListener("click", loadHighRiskDemo);
 }
 
-// ─── Analysis ────────────────────────────────────────────────────────────────
+// ─── Risk Analysis ───────────────────────────────────────────────────────────
 
 async function runAnalysis() {
-  const placeholder = document.getElementById("risk-placeholder");
-  const resultEl    = document.getElementById("risk-result");
-  const loadingEl   = document.getElementById("risk-loading");
-
-  if (placeholder) placeholder.hidden = true;
-  if (resultEl)    resultEl.hidden    = true;
-  if (loadingEl)   loadingEl.hidden   = false;
-
+  document.getElementById("risk-placeholder").hidden = true;
+  document.getElementById("risk-result").hidden = true;
+  document.getElementById("risk-loading").hidden = false;
   const values = readFormValues();
-
   let result = null;
-
-  if (apiOnline) {
-    try {
-      result = await apiFetch("/clinical/predict", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
-    } catch (e) {
-      console.warn("API predict failed:", e);
-    }
-  }
-
+  if (apiOnline) { try { result = await apiFetch("/clinical/predict",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(values)}); } catch {} }
   if (!result) result = clientSideRisk(values);
-
-  currentRiskResult = result;
-
-  if (loadingEl) loadingEl.hidden = true;
+  document.getElementById("risk-loading").hidden = true;
   displayRiskResult(result);
 }
 
 function clientSideRisk(values) {
-  // Lightweight heuristic fallback (no backend needed)
-  const blast  = values.blast_cells || 0;
-  const wbc    = values.wbc         || 7.5;
-  const lymph  = values.lymphocytes || 28;
-  const hgb    = values.hemoglobin  || 14;
-  const plt    = values.platelets   || 260;
+  const blast = values.blast_cells||0, wbc = values.wbc||7.5, lymph = values.lymphocytes||28;
+  const hgb   = values.hemoglobin||14, plt = values.platelets||260;
+  let s = 0;
+  if (blast>20) s+=.4; else if (blast>5) s+=.2;
+  if (wbc>50)   s+=.2; else if (wbc>15) s+=.1;
+  if (lymph>70) s+=.15;
+  if (hgb<9)    s+=.1;
+  if (plt<80)   s+=.1;
+  s = Math.min(s, .99);
+  const refs = clinicalMeta?.reference_ranges||{};
+  const factors = Object.entries(values).map(([k,v])=>{
+    const feat = Object.entries(FIELD_KEYS).find(([,kk])=>kk===k)?.[0]||k;
+    const r = refs[feat]||{}; let concern = "NORMAL";
+    if (r.min!==undefined) { if (v<r.min) concern="LOW"; else if (v>r.max) concern="HIGH"; }
+    return {feature:feat, value:v, concern};
+  }).sort((a,b)=>({HIGH:0,LOW:1,NORMAL:2}[a.concern]||2)-({HIGH:0,LOW:1,NORMAL:2}[b.concern]||2));
+  let level,label,color;
+  if      (s<.25) { level="LOW";      label="Low Risk — Normal Blood Pattern"; color="var(--green)"; }
+  else if (s<.55) { level="MODERATE"; label="Moderate Risk — Further Evaluation Recommended"; color="var(--orange)"; }
+  else if (s<.80) { level="HIGH";     label="High Risk — Urgent Medical Consultation"; color="var(--orange)"; }
+  else            { level="CRITICAL"; label="Critical Risk — Immediate Hematologist Referral"; color="var(--pink)"; }
+  return {risk_score:s, risk_level:level, risk_label:label, risk_color:color, contributing_factors:factors};
+}
 
-  let score = 0;
-  if (blast > 20)  score += 0.4;
-  else if (blast > 5) score += 0.2;
-  if (wbc > 50)    score += 0.2;
-  else if (wbc > 15) score += 0.1;
-  if (lymph > 70)  score += 0.15;
-  if (hgb < 9)     score += 0.1;
-  if (plt < 80)    score += 0.1;
-  score = Math.min(score, 0.99);
+function displayRiskResult(r) {
+  const el = document.getElementById("risk-result"); if (!el) return;
+  el.hidden = false;
+  animGauge(r.risk_score||0, r.risk_color||"var(--purple)");
+  const badge = document.getElementById("risk-level-badge");
+  if (badge) { badge.textContent=r.risk_level; badge.style.background=`${r.risk_color}22`; badge.style.color=r.risk_color; badge.style.border=`1px solid ${r.risk_color}66`; }
+  const lbl = document.getElementById("risk-label-text"); if (lbl) lbl.textContent = r.risk_label;
+  const list = document.getElementById("factors-list"); if (!list) return;
+  list.innerHTML = (r.contributing_factors||[]).slice(0,12).map(f=>`<div class="factor-row"><span class="factor-name">${f.feature}</span><span class="factor-value">${typeof f.value==="number"?f.value.toFixed(1):f.value}</span><span class="factor-badge ${f.concern}">${f.concern}</span></div>`).join("");
+}
 
-  const refs = clinicalMeta?.reference_ranges || {};
-  const factors = Object.entries(values).map(([key, val]) => {
-    const feat = Object.entries(FIELD_KEYS).find(([, k]) => k === key)?.[0] || key;
-    const ref  = refs[feat] || {};
-    let concern = "NORMAL";
-    if (ref.min !== undefined) {
-      if (val < ref.min) concern = "LOW";
-      else if (val > ref.max) concern = "HIGH";
-    }
-    return { feature: feat, value: val, concern };
-  }).sort((a, b) => {
-    const o = { HIGH: 0, LOW: 1, NORMAL: 2 };
-    return (o[a.concern] || 2) - (o[b.concern] || 2);
+function animGauge(score, color) {
+  const arc = document.getElementById("gauge-arc");
+  const needle = document.getElementById("gauge-needle");
+  const pct  = document.getElementById("gauge-percent");
+  if (!arc) return;
+  const total=251, fill=score*total;
+  arc.style.stroke = color;
+  arc.style.transition = "stroke-dasharray 1.2s cubic-bezier(.4,0,.2,1)";
+  arc.style.strokeDasharray = `${fill} ${total}`;
+  const angle = Math.PI - score*Math.PI;
+  if (needle) { needle.setAttribute("cx",(100+80*Math.cos(angle)).toFixed(1)); needle.setAttribute("cy",(100-80*Math.sin(angle)).toFixed(1)); needle.style.fill=color; }
+  const t0=Date.now(), dur=1200;
+  const tick=()=>{ const t=Math.min((Date.now()-t0)/dur,1), e=1-Math.pow(1-t,3); if (pct) pct.textContent=Math.round(e*score*100)+"%"; if(t<1)requestAnimationFrame(tick); };
+  requestAnimationFrame(tick);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  BLOOD SMEAR CELL DETECTION
+// ════════════════════════════════════════════════════════════════════════════
+
+let smearAnalyzed = false;
+
+function initSmearAnalysis() {
+  const fileInput = document.getElementById("smear-file-input");
+  const uploadArea = document.getElementById("smear-upload-area");
+
+  fileInput?.addEventListener("change", e => {
+    const f = e.target.files[0]; if (f) loadUserImage(f);
   });
 
-  let level, label, color;
-  if      (score < 0.25) { level = "LOW";      label = "Low Risk — Normal Pattern Detected";              color = "#00ff94"; }
-  else if (score < 0.55) { level = "MODERATE"; label = "Moderate Risk — Further Evaluation Recommended"; color = "#ffd700"; }
-  else if (score < 0.80) { level = "HIGH";     label = "High Risk — Urgent Medical Consultation";         color = "#ff8c00"; }
-  else                   { level = "CRITICAL"; label = "Critical Risk — Immediate Hematologist Referral"; color = "#ff3366"; }
+  // Drag-and-drop
+  uploadArea?.addEventListener("dragover", e => { e.preventDefault(); uploadArea.classList.add("drag-over"); });
+  uploadArea?.addEventListener("dragleave", () => uploadArea.classList.remove("drag-over"));
+  uploadArea?.addEventListener("drop", e => {
+    e.preventDefault(); uploadArea.classList.remove("drag-over");
+    const f = e.dataTransfer.files[0]; if (f && f.type.startsWith("image/")) loadUserImage(f);
+  });
 
-  return { risk_score: score, risk_level: level, risk_label: label, risk_color: color, contributing_factors: factors };
+  document.getElementById("btn-load-demo-smear")?.addEventListener("click", () => loadSampleImage("./assets/blood_smear_demo.png", "leukemia"));
+  document.getElementById("btn-load-normal-smear")?.addEventListener("click", () => loadSampleImage("./assets/blood_smear_demo.png", "normal"));
 }
 
-function displayRiskResult(result) {
-  const resultEl = document.getElementById("risk-result");
-  if (!resultEl) return;
-  resultEl.hidden = false;
-
-  const score   = result.risk_score  || 0;
-  const level   = result.risk_level  || "LOW";
-  const label   = result.risk_label  || "";
-  const color   = result.risk_color  || "#00ff94";
-  const factors = result.contributing_factors || [];
-
-  // Gauge
-  animateGauge(score, color);
-
-  const badge = document.getElementById("risk-level-badge");
-  if (badge) {
-    badge.textContent = level;
-    badge.style.background = color + "22";
-    badge.style.color      = color;
-    badge.style.border     = `1px solid ${color}60`;
-  }
-  const labelEl = document.getElementById("risk-label-text");
-  if (labelEl) labelEl.textContent = label;
-
-  // Factors
-  const factorsList = document.getElementById("factors-list");
-  if (factorsList) {
-    factorsList.innerHTML = factors.slice(0, 12).map(f =>
-      `<div class="factor-row">
-        <span class="factor-name">${f.feature}</span>
-        <span class="factor-value">${typeof f.value === "number" ? f.value.toFixed(1) : f.value}</span>
-        <span class="factor-badge ${f.concern}">${f.concern}</span>
-      </div>`
-    ).join("");
-  }
+function loadUserImage(file) {
+  const reader = new FileReader();
+  reader.onload = e => { const img = new Image(); img.onload = () => analyzeSmear(img, "auto"); img.src = e.target.result; };
+  reader.readAsDataURL(file);
 }
 
-function animateGauge(score, color) {
-  const arc    = document.getElementById("gauge-arc");
-  const needle = document.getElementById("gauge-needle");
-  const pct    = document.getElementById("gauge-percent");
-
-  if (!arc) return;
-
-  const total = 251; // arc length for semicircle
-  const fill  = score * total;
-
-  arc.style.stroke        = color;
-  arc.style.transition    = "stroke-dasharray 1.2s cubic-bezier(0.4, 0, 0.2, 1)";
-  arc.style.strokeDasharray = `${fill} ${total}`;
-
-  // Needle position on arc
-  // Arc from left (20,100) to right (180,100) — angle goes from 180° to 0°
-  const angle = Math.PI - score * Math.PI; // radians
-  const cx = 100 + 80 * Math.cos(angle);
-  const cy = 100 - 80 * Math.sin(angle);
-  if (needle) { needle.setAttribute("cx", cx.toFixed(1)); needle.setAttribute("cy", cy.toFixed(1)); needle.style.fill = color; }
-
-  // Animate counter
-  const start = Date.now();
-  const dur   = 1200;
-  function tick() {
-    const t  = Math.min((Date.now() - start) / dur, 1);
-    const e  = 1 - Math.pow(1 - t, 3); // ease out cubic
-    const v  = Math.round(e * score * 100);
-    if (pct) pct.textContent = v + "%";
-    if (t < 1) requestAnimationFrame(tick);
-  }
-  requestAnimationFrame(tick);
+function loadSampleImage(src, mode) {
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.onload = () => analyzeSmear(img, mode);
+  img.onerror = () => { console.warn("Demo image not found — run train.py to generate it."); showSmearError(); };
+  img.src = src + "?t=" + Date.now();
 }
 
-// ─── Animated counters ───────────────────────────────────────────────────────
-
-function animateCounter(selector, target) {
-  const el = document.querySelector(selector);
-  if (!el) return;
-  const isFloat = !Number.isInteger(target);
-  const start   = Date.now();
-  const dur     = 1600;
-  function tick() {
-    const t = Math.min((Date.now() - start) / dur, 1);
-    const e = 1 - Math.pow(1 - t, 3);
-    el.textContent = isFloat
-      ? (e * target).toFixed(3)
-      : Math.round(e * target).toLocaleString();
-    if (t < 1) requestAnimationFrame(tick);
-  }
-  requestAnimationFrame(tick);
+function showSmearError() {
+  const sum = document.getElementById("smear-summary");
+  if (sum) sum.innerHTML = `<div style="color:var(--pink);text-align:center">Demo image not found.<br/>Run <code>python train.py</code> first, then reload.</div>`;
 }
 
-// ─── Scroll animations ───────────────────────────────────────────────────────
+async function analyzeSmear(img, mode) {
+  document.getElementById("smear-placeholder").style.display = "none";
+  document.getElementById("smear-analyzing").style.display   = "flex";
 
-function initScrollAnimations() {
-  document.querySelectorAll(
-    ".glass-card, .kpi-card, .pipe-step, .quantum-card, .section-header"
-  ).forEach(el => el.classList.add("animate-in"));
+  const canvas  = document.getElementById("smear-canvas");
+  const overlay = document.getElementById("smear-overlay");
+  const ctx     = canvas.getContext("2d");
+  const octx    = overlay.getContext("2d");
 
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add("visible"); });
-  }, { threshold: 0.1 });
+  // Scale to max 700px wide
+  const maxW = 700;
+  const scale = img.width > maxW ? maxW / img.width : 1;
+  canvas.width  = img.width  * scale;
+  canvas.height = img.height * scale;
+  overlay.width  = canvas.width;
+  overlay.height = canvas.height;
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-  document.querySelectorAll(".animate-in").forEach(el => observer.observe(el));
+  // Small delay so UI updates
+  await new Promise(r => setTimeout(r, 120));
+
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const cells = detectCells(imageData, canvas.width, canvas.height, mode);
+
+  // Animate highlighting cell by cell
+  octx.clearRect(0, 0, overlay.width, overlay.height);
+  document.getElementById("smear-analyzing").style.display = "none";
+
+  await animateHighlights(octx, cells, overlay.width, overlay.height);
+  updateSmearResults(cells, mode);
 }
 
-// ─── Quantum particle canvas ──────────────────────────────────────────────────
+// ─── Cell detection ──────────────────────────────────────────────────────────
 
-function initParticleCanvas() {
-  const canvas = document.getElementById("quantum-canvas");
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
+function detectCells(imageData, width, height, mode) {
+  const data = imageData.data;
+  const cells = [];
+  const step  = 22; // grid step
+  const minR  =  8; // min cell radius
+  const visited = new Set();
 
-  function resize() {
-    canvas.width  = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+  for (let cy = step; cy < height - step; cy += step) {
+    for (let cx = step; cx < width - step; cx += step) {
+      // Sample center pixel
+      const idx = (cy * width + cx) * 4;
+      const r = data[idx], g = data[idx+1], b = data[idx+2];
+
+      // Background is pale pink ~(235,205,210). Skip near-background pixels.
+      const isBackground = r > 220 && g > 190 && b > 188;
+      if (isBackground) continue;
+
+      // Deduplicate nearby detections
+      const key = `${Math.round(cx/step)},${Math.round(cy/step)}`;
+      if (visited.has(key)) continue;
+
+      // Sample surrounding ring to estimate cell extent
+      const samples = sampleRing(data, cx, cy, 14, width, height);
+      if (!samples.isCell) continue;
+
+      // Mark neighbors visited
+      for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++)
+        visited.add(`${Math.round(cx/step)+dx},${Math.round(cy/step)+dy}`);
+
+      const type   = classifyCell(r, g, b, samples);
+      const radius = type==="rbc" ? 10+Math.random()*5 : type==="wbc" ? 18+Math.random()*8 : 22+Math.random()*10;
+
+      cells.push({ x:cx, y:cy, radius, type, r, g, b });
+    }
   }
-  resize();
-  window.addEventListener("resize", resize);
 
-  const COLORS = ["#6c63ff", "#00d4ff", "#00ff94", "#ffd700", "#e040fb"];
-  const NUM_PARTICLES = 70;
-  const NUM_CONNECTIONS = 80;
+  // If mode is "normal", force no blast cells
+  if (mode === "normal") {
+    return cells.map(c => ({...c, type: c.type==="blast" ? "wbc" : c.type}));
+  }
 
-  const particles = Array.from({ length: NUM_PARTICLES }, () => ({
-    x:    Math.random() * canvas.width,
-    y:    Math.random() * canvas.height,
-    vx:   (Math.random() - 0.5) * 0.4,
-    vy:   (Math.random() - 0.5) * 0.4,
-    r:    Math.random() * 2 + 1,
-    color: COLORS[Math.floor(Math.random() * COLORS.length)],
-    phase: Math.random() * Math.PI * 2,
-  }));
+  return cells;
+}
 
-  function frame(t) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+function sampleRing(data, cx, cy, r, width, height) {
+  let totalR=0, totalG=0, totalB=0, maxDark=0, n=0;
+  const angles = [0,45,90,135,180,225,270,315];
+  for (const a of angles) {
+    const x = Math.round(cx + r*Math.cos(a*Math.PI/180));
+    const y = Math.round(cy + r*Math.sin(a*Math.PI/180));
+    if (x<0||x>=width||y<0||y>=height) continue;
+    const idx = (y*width+x)*4;
+    totalR += data[idx]; totalG += data[idx+1]; totalB += data[idx+2]; n++;
+    const darkness = 255 - (data[idx]+data[idx+1]+data[idx+2])/3;
+    if (darkness > maxDark) maxDark = darkness;
+  }
+  const isCell = n>0 && maxDark > 30;
+  return { isCell, avgR: totalR/n, avgG: totalG/n, avgB: totalB/n, maxDark };
+}
 
-    // Update positions
-    particles.forEach(p => {
-      p.x += p.vx;
-      p.y += p.vy;
-      if (p.x < 0 || p.x > canvas.width)  p.vx *= -1;
-      if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-    });
+function classifyCell(r, g, b, samples) {
+  // High blue relative to red/green (purple/dark) = nucleus-heavy → WBC or blast
+  const purpleScore = (b - (r+g)/2) / 255;       // +ve = purplish
+  const brightness  = (r+g+b)/3;
+  const darknessScore = (255 - brightness) / 255;  // 0=white, 1=black
 
-    // Draw connections (closest pairs)
-    for (let i = 0; i < NUM_PARTICLES; i++) {
-      for (let j = i + 1; j < NUM_PARTICLES && j < i + 8; j++) {
-        const dx = particles[i].x - particles[j].x;
-        const dy = particles[i].y - particles[j].y;
-        const d  = Math.sqrt(dx * dx + dy * dy);
-        if (d < 140) {
-          ctx.beginPath();
-          ctx.moveTo(particles[i].x, particles[i].y);
-          ctx.lineTo(particles[j].x, particles[j].y);
-          ctx.strokeStyle = `rgba(108,99,255,${((1 - d / 140) * 0.15).toFixed(3)})`;
-          ctx.lineWidth   = 0.5;
-          ctx.stroke();
-        }
-      }
+  // Very dark and very purple → blast (leukemic cell with large irregular nucleus)
+  if (purpleScore > 0.05 && darknessScore > 0.35) return "blast";
+  // Moderately purple → WBC (white blood cell with clear nucleus)
+  if (purpleScore > -0.05 && darknessScore > 0.20) return "wbc";
+  // Pink/salmon, moderate darkness → RBC
+  return "rbc";
+}
+
+// ─── Animated highlights ─────────────────────────────────────────────────────
+
+async function animateHighlights(octx, cells, width, height) {
+  // Sort: RBC first, WBC second, blast last (most dramatic)
+  const sorted = [...cells].sort((a,b) => {
+    const order = {rbc:0, wbc:1, blast:2};
+    return order[a.type] - order[b.type];
+  });
+
+  const colors = { rbc: "#30d158", wbc: "#64d2ff", blast: "#ff375f" };
+  const glow   = { rbc: "rgba(48,209,88,.25)", wbc: "rgba(100,210,255,.2)", blast: "rgba(255,55,95,.4)" };
+
+  for (let i=0; i<sorted.length; i++) {
+    const c = sorted[i];
+    const col = colors[c.type];
+    const glw = glow[c.type];
+    const lw  = c.type==="blast" ? 2.5 : 1.8;
+
+    // Draw ring
+    octx.beginPath();
+    octx.arc(c.x, c.y, c.radius+2, 0, Math.PI*2);
+    octx.strokeStyle = col;
+    octx.lineWidth = lw;
+    octx.stroke();
+
+    // Blast: outer glow ring
+    if (c.type === "blast") {
+      octx.beginPath();
+      octx.arc(c.x, c.y, c.radius+9, 0, Math.PI*2);
+      octx.strokeStyle = glw;
+      octx.lineWidth = 5;
+      octx.stroke();
+
+      // Small label
+      octx.font = "bold 9px 'Space Grotesk', sans-serif";
+      octx.fillStyle = "#ff375f";
+      octx.fillText("BLAST", c.x - 16, c.y - c.radius - 5);
     }
 
-    // Draw particles
-    particles.forEach((p, i) => {
-      const pulse    = Math.sin(t * 0.002 + p.phase) * 0.5 + 0.5;
-      const alpha    = (0.4 + pulse * 0.5).toFixed(2);
-      const grd      = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 2.5);
-      grd.addColorStop(0, p.color);
-      grd.addColorStop(1, "transparent");
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r + pulse, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${hexToRgb(p.color)},${alpha})`;
-      ctx.fill();
-    });
-
-    requestAnimationFrame(frame);
+    // Every 8 cells, wait a frame to animate
+    if (i % 8 === 0) await new Promise(r => requestAnimationFrame(r));
   }
+
+  // Pulsing loop for blast cells
+  pulseBlastCells(octx, sorted.filter(c=>c.type==="blast"), colors, glow);
+}
+
+function pulseBlastCells(octx, blasts, colors, glow) {
+  if (!blasts.length) return;
+  let phase = 0;
+  const pulse = () => {
+    phase += 0.06;
+    blasts.forEach(c => {
+      // Clear old outer ring
+      octx.clearRect(c.x-c.radius-16, c.y-c.radius-16, (c.radius+16)*2, (c.radius+16)*2);
+      // Redraw inner ring
+      octx.beginPath(); octx.arc(c.x, c.y, c.radius+2, 0, Math.PI*2);
+      octx.strokeStyle = colors.blast; octx.lineWidth = 2.5; octx.stroke();
+      octx.font = "bold 9px 'Space Grotesk', sans-serif";
+      octx.fillStyle = "#ff375f";
+      octx.fillText("BLAST", c.x-16, c.y-c.radius-5);
+      // Pulsing outer
+      const pAlpha = (Math.sin(phase)+1)/2 * 0.6 + 0.1;
+      const pRadius = c.radius + 8 + Math.sin(phase)*4;
+      octx.beginPath(); octx.arc(c.x, c.y, pRadius, 0, Math.PI*2);
+      octx.strokeStyle = `rgba(255,55,95,${pAlpha.toFixed(2)})`; octx.lineWidth = 4; octx.stroke();
+    });
+    requestAnimationFrame(pulse);
+  };
+  requestAnimationFrame(pulse);
+}
+
+// ─── Smear results panel ─────────────────────────────────────────────────────
+
+function updateSmearResults(cells, mode) {
+  const rbcCells   = cells.filter(c=>c.type==="rbc");
+  const wbcCells   = cells.filter(c=>c.type==="wbc");
+  const blastCells = cells.filter(c=>c.type==="blast");
+  const total = cells.length;
+  const blastPct = total > 0 ? (blastCells.length / total * 100) : 0;
+
+  document.getElementById("cnt-rbc").textContent   = rbcCells.length;
+  document.getElementById("cnt-wbc").textContent   = wbcCells.length;
+  document.getElementById("cnt-blast").textContent = blastCells.length;
+
+  const bar = document.getElementById("blast-pct-bar");
+  const lbl = document.getElementById("blast-pct-label");
+  if (bar) bar.style.width = Math.min(blastPct*2, 100) + "%"; // ×2 for visual impact
+  if (lbl) lbl.textContent = blastPct.toFixed(1) + "%";
+
+  // Summary text
+  const sum = document.getElementById("smear-summary");
+  if (!sum) return;
+
+  let level, msg, col;
+  if (blastPct === 0 || mode === "normal") {
+    level = "Normal Pattern"; col = "var(--green)";
+    msg = `✅ <strong>${total} cells detected.</strong> No blast cells found. WBC:RBC ratio looks normal. This smear appears consistent with a healthy blood sample. Always confirm with a hematologist.`;
+  } else if (blastPct < 5) {
+    level = "Borderline"; col = "var(--orange)";
+    msg = `⚠ <strong>${blastCells.length} suspected blast cell(s) detected</strong> (${blastPct.toFixed(1)}% of sample). Blast cells <5% may be early-stage. Recommend a formal bone marrow biopsy and full haematology panel.`;
+  } else if (blastPct < 20) {
+    level = "Elevated Risk"; col = "var(--orange)";
+    msg = `🚨 <strong>${blastCells.length} blast cells detected</strong> (${blastPct.toFixed(1)}%). Blast cells between 5-20% indicate possible early leukemia. This pattern is consistent with ALL or AML in early stages. Urgent hematology consult recommended.`;
+  } else {
+    level = "HIGH RISK"; col = "var(--pink)";
+    msg = `🔴 <strong>CRITICAL: ${blastCells.length} blast cells detected</strong> (${blastPct.toFixed(1)}%). Blast percentage >20% meets WHO diagnostic criteria for Acute Leukemia. Immediate specialist referral required. This is NOT a diagnosis — get a bone marrow biopsy.`;
+  }
+
+  sum.style.background    = `${col}11`;
+  sum.style.borderColor   = `${col}33`;
+  sum.innerHTML = `<div style="color:${col};font-weight:700;font-size:.85rem;margin-bottom:8px">${level}</div><div style="font-size:.83rem;color:var(--text2);line-height:1.7">${msg}</div>`;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  ANIMATED COUNTERS
+// ════════════════════════════════════════════════════════════════════════════
+
+function animCounter(selector, target) {
+  const el = document.querySelector(selector); if (!el) return;
+  const isF = !Number.isInteger(target);
+  const t0=Date.now(), dur=1800;
+  const tick=()=>{ const t=Math.min((Date.now()-t0)/dur,1), e=1-Math.pow(1-t,3); el.textContent=isF?(e*target).toFixed(3):Math.round(e*target).toLocaleString(); if(t<1)requestAnimationFrame(tick); };
+  requestAnimationFrame(tick);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  SCROLL ANIMATIONS
+// ════════════════════════════════════════════════════════════════════════════
+
+function initScrollAnimations() {
+  document.querySelectorAll(".glass-card,.kpi-card,.pipe-step,.explain-card,.dataset-card,.fade-in").forEach(el => el.classList.add("fade-in"));
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add("visible"); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll(".fade-in").forEach(el => obs.observe(el));
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  PARTICLE CANVAS (macOS-style floating orbs)
+// ════════════════════════════════════════════════════════════════════════════
+
+function initParticleCanvas() {
+  const canvas = document.getElementById("quantum-canvas"); if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+
+  function resize() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; }
+  resize(); window.addEventListener("resize", resize);
+
+  const COLORS = ["#bf5af2","#0a84ff","#30d158","#ff9f0a","#ff375f","#64d2ff","#ffd60a"];
+  const pts = Array.from({length:65}, () => ({
+    x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+    vx:(Math.random()-.5)*.35, vy:(Math.random()-.5)*.35,
+    r: Math.random()*2.2+.8, color:COLORS[0|Math.random()*COLORS.length],
+    phase:Math.random()*Math.PI*2,
+  }));
+
+  const frame = t => {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pts.forEach(p => {
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0||p.x>canvas.width)  p.vx*=-1;
+      if(p.y<0||p.y>canvas.height) p.vy*=-1;
+    });
+    // Connections
+    for(let i=0;i<pts.length;i++) for(let j=i+1;j<Math.min(pts.length,i+6);j++){
+      const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y, d=Math.sqrt(dx*dx+dy*dy);
+      if(d<130){ ctx.beginPath(); ctx.moveTo(pts[i].x,pts[i].y); ctx.lineTo(pts[j].x,pts[j].y);
+        ctx.strokeStyle=`rgba(191,90,242,${((1-d/130)*.1).toFixed(3)})`; ctx.lineWidth=.5; ctx.stroke(); }
+    }
+    // Dots
+    pts.forEach(p => {
+      const pulse=(Math.sin(t*.002+p.phase)+1)/2;
+      const alpha=.3+pulse*.6;
+      const [rr,gg,bb]=hexToRgb(p.color);
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r+pulse*.5,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${rr},${gg},${bb},${alpha.toFixed(2)})`; ctx.fill();
+    });
+    requestAnimationFrame(frame);
+  };
   requestAnimationFrame(frame);
 }
 
 function hexToRgb(hex) {
-  const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
-  return m ? `${parseInt(m[1],16)},${parseInt(m[2],16)},${parseInt(m[3],16)}` : "108,99,255";
+  const m=/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
+  return m?[parseInt(m[1],16),parseInt(m[2],16),parseInt(m[3],16)]:[191,90,242];
 }
