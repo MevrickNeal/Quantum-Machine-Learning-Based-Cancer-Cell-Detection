@@ -173,9 +173,11 @@ ul{list-style:none}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-row{display:flex;align-items:center;gap:14px;padding:36px;justify-content:center;color:var(--text3)}
 
-/* ─── Fade animations ────────────────────────────────────────────────────── */
-.fade-in{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}
-.fade-in.visible{opacity:1;transform:translateY(0)}
+/* ── Fade-in cards ─────────────────────────────────────────────────────────── */
+.fade-in{opacity:0;transform:translateY(18px);transition:opacity .5s ease,transform .5s ease}
+.fade-in.visible{opacity:1;transform:none}
+/* Patient cards start visible (they're rendered on user action) */
+.patient-card{opacity:1;transform:none}
 
 /* ══════════════════════════════════════════════════════════════════════════
    HERO

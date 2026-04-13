@@ -580,10 +580,16 @@ function animCounter(selector, target) {
 
 function initScrollAnimations() {
   document.querySelectorAll(".glass-card,.kpi-card,.pipe-step,.explain-card,.dataset-card,.fade-in").forEach(el => el.classList.add("fade-in"));
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add("visible"); });
-  }, { threshold: 0.1 });
-  document.querySelectorAll(".fade-in").forEach(el => obs.observe(el));
+  window._scrollObs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("visible"); window._scrollObs.unobserve(e.target); } });
+  }, { threshold: 0.05 });
+  document.querySelectorAll(".fade-in").forEach(el => window._scrollObs.observe(el));
+}
+
+// Helper: observe newly injected cards
+function observeNewCards(container) {
+  if (!window._scrollObs) return;
+  container.querySelectorAll(".fade-in:not(.visible)").forEach(el => window._scrollObs.observe(el));
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -707,6 +713,12 @@ function renderPatientGrid(cases, filter = "all") {
   }
 
   grid.innerHTML = show.map(p => renderPatientCard(p)).join("");
+
+  // Make newly injected cards visible immediately (they're in-viewport when rendered by filter clicks)
+  setTimeout(() => {
+    grid.querySelectorAll(".patient-card").forEach(el => el.classList.add("visible"));
+    observeNewCards(grid);
+  }, 50);
 
   // Show "Show All" button if more exist
   const btn = document.getElementById("btn-show-more");
