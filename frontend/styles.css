@@ -564,5 +564,51 @@ ul{list-style:none}
 .footer-col a:hover{color:var(--cyan)}
 .footer-bottom{border-top:1px solid var(--border);padding-top:22px;text-align:center;font-size:.75rem;color:var(--text3)}
 
-/* ─── Responsive nav hide ─────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════
+   PATIENT SHOWCASE CARDS
+   ══════════════════════════════════════════════════════════════════════════ */
+.patient-card{
+  padding:18px 20px;border-radius:18px;background:var(--card);
+  border:1px solid var(--border);position:relative;overflow:hidden;
+  transition:all .3s;cursor:default;
+}
+.patient-card:hover{border-color:var(--border-h);transform:translateY(-2px);box-shadow:var(--shadow)}
+.patient-card.is-correct{border-left:3px solid var(--green)}
+.patient-card.is-wrong{border-left:3px solid var(--pink)}
+.pc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.pc-id{font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--text3)}
+.pc-result-badge{padding:3px 10px;border-radius:99px;font-size:.7rem;font-weight:700;letter-spacing:.04em}
+.pc-result-badge.correct{background:rgba(48,209,88,.15);color:var(--green);border:1px solid rgba(48,209,88,.3)}
+.pc-result-badge.wrong{background:rgba(255,55,95,.15);color:var(--pink);border:1px solid rgba(255,55,95,.3)}
+.pc-diagnosis{margin-bottom:8px}
+.pc-true{font-size:.72rem;color:var(--text3);margin-bottom:2px}
+.pc-labels{display:flex;gap:6px;align-items:center}
+.pc-label{padding:4px 10px;border-radius:8px;font-size:.8rem;font-weight:700}
+.pc-label.ALL {background:rgba(255,55,95,.15);color:var(--pink)}
+.pc-label.AML {background:rgba(255,159,10,.15);color:var(--orange)}
+.pc-arrow{color:var(--text3);font-size:.85rem}
+.pc-conf-bar{margin:10px 0}
+.pc-conf-label{display:flex;justify-content:space-between;font-size:.72rem;color:var(--text3);margin-bottom:3px}
+.pc-bar-track{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.pc-bar-fill{height:100%;border-radius:3px;transition:width 1s cubic-bezier(.4,0,.2,1)}
+.pc-genes{margin-top:10px}
+.pc-genes-title{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:4px}
+.pc-gene-list{display:flex;flex-wrap:wrap;gap:4px}
+.pc-gene{padding:2px 7px;border-radius:6px;font-size:.65rem;font-family:'JetBrains Mono',monospace;background:rgba(191,90,242,.1);color:var(--purple);border:1px solid rgba(191,90,242,.2)}
+.pc-cbc{margin-top:10px;display:flex;flex-wrap:wrap;gap:5px}
+.pc-cbc-item{font-size:.68rem;padding:2px 7px;background:var(--bg3);border-radius:6px;color:var(--text2)}
+.pc-cbc-item.abn{background:rgba(255,55,95,.1);color:var(--pink)}
+.models-agree{font-size:.7rem;color:var(--text3);margin-top:8px}
+
+/* Filter buttons */
+.case-filter-btn{
+  padding:6px 14px;border-radius:99px;font-size:.78rem;font-weight:600;
+  border:1px solid var(--border);background:var(--card);color:var(--text2);
+  cursor:pointer;transition:all .25s;font-family:inherit;
+}
+.case-filter-btn:hover,.case-filter-btn.active{
+  background:rgba(191,90,242,.15);border-color:rgba(191,90,242,.4);color:var(--purple);
+}
+
+/* ─── Responsive footer ───────────────────────────────────────────────────── */
 @media(max-width:600px){.nav-links .nav-link-hide{display:none}}

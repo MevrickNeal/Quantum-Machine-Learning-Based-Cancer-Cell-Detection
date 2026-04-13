@@ -437,6 +437,106 @@
   </div>
 </section>
 
+<!-- ══ REAL PATIENT SHOWCASE ══════════════════════════════════════════════ -->
+<section class="section" id="real-cases">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-badge">🧬 Real Data</div>
+      <h2>Live Detection on Real Patients</h2>
+      <p>Every card below is a <strong>real person</strong> from the Golub et al. 1999 Science paper —
+         72 leukemia patients, gene expression run through our model with <strong>Leave-One-Out validation</strong>
+         (the model never trained on the patient it's predicting).</p>
+    </div>
+
+    <!-- Summary bar -->
+    <div class="glass-card fade-in" id="case-summary-bar" style="padding:20px 28px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:2.2rem">🧬</div>
+        <div>
+          <div style="font-size:1rem;font-weight:700">Golub et al. 1999 — Leukemia Gene Expression</div>
+          <div style="font-size:.82rem;color:var(--text2)"><a href="https://www.openml.org/d/1104" target="_blank" rel="noreferrer" style="color:var(--cyan)">OpenML Dataset #1104</a> · Science 286 (1999) · 72 bone marrow samples · 7,129 genes</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <div style="text-align:center;padding:10px 18px;background:rgba(48,209,88,.1);border:1px solid rgba(48,209,88,.25);border-radius:14px">
+          <div style="font-size:1.5rem;font-weight:800;color:var(--green);font-family:'JetBrains Mono',monospace" id="cs-correct">—</div>
+          <div style="font-size:.72rem;color:var(--text2)">Correct (LOO-CV)</div>
+        </div>
+        <div style="text-align:center;padding:10px 18px;background:rgba(255,55,95,.1);border:1px solid rgba(255,55,95,.25);border-radius:14px">
+          <div style="font-size:1.5rem;font-weight:800;color:var(--pink);font-family:'JetBrains Mono',monospace" id="cs-wrong">—</div>
+          <div style="font-size:.72rem;color:var(--text2)">Missed (model error)</div>
+        </div>
+        <div style="text-align:center;padding:10px 18px;background:rgba(191,90,242,.1);border:1px solid rgba(191,90,242,.25);border-radius:14px">
+          <div style="font-size:1.5rem;font-weight:800;color:var(--purple);font-family:'JetBrains Mono',monospace" id="cs-acc">—</div>
+          <div style="font-size:.72rem;color:var(--text2)">Accuracy (real data)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center">
+      <span style="font-size:.82rem;color:var(--text2)">Filter:</span>
+      <button class="case-filter-btn active" data-filter="all">All 72 Patients</button>
+      <button class="case-filter-btn" data-filter="ALL">ALL Leukemia</button>
+      <button class="case-filter-btn" data-filter="AML">AML Leukemia</button>
+      <button class="case-filter-btn" data-filter="correct">✅ Correct Predictions</button>
+      <button class="case-filter-btn" data-filter="wrong">❌ Model Errors</button>
+      <button class="case-filter-btn" data-filter="high-conf">High Confidence (>90%)</button>
+    </div>
+
+    <!-- Patient cards grid -->
+    <div id="patient-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px">
+      <div class="loading-row" style="grid-column:1/-1"><div class="spinner"></div><span>Loading real patient data...</span></div>
+    </div>
+
+    <!-- Show more -->
+    <div style="text-align:center;margin-top:24px" id="show-more-wrap">
+      <button class="btn btn-ghost" id="btn-show-more" style="display:none">Show All Patients</button>
+    </div>
+
+    <!-- Microscopy showcase -->
+    <div style="margin-top:40px">
+      <h3 style="font-size:1.2rem;font-weight:700;margin-bottom:8px;text-align:center">Blood Smear Microscopy — Three Patient Types</h3>
+      <p style="color:var(--text2);font-size:.88rem;text-align:center;margin-bottom:24px">Typical microscopy appearance for each diagnosis — load any into the cell detector above</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px">
+        <div class="glass-card fade-in" style="padding:0;overflow:hidden">
+          <div style="position:relative">
+            <img src="./assets/smear_normal.png" alt="Normal blood smear" style="width:100%;display:block;border-radius:20px 20px 0 0"/>
+            <div style="position:absolute;top:10px;left:10px;padding:4px 12px;border-radius:99px;background:rgba(48,209,88,.9);color:#000;font-size:.75rem;font-weight:700">HEALTHY</div>
+          </div>
+          <div style="padding:16px">
+            <div style="font-weight:700;margin-bottom:5px">Normal Blood</div>
+            <div style="font-size:.8rem;color:var(--text2);margin-bottom:12px">Uniform RBCs, 1-2 WBCs only. No blasts visible. WBC count 4.5–11 K/µL normal range.</div>
+            <button class="sample-btn" onclick="loadSampleImage('./assets/smear_normal.png','normal'); document.getElementById('smear-analysis').scrollIntoView({behavior:'smooth'})">🔬 Analyze this image</button>
+          </div>
+        </div>
+        <div class="glass-card fade-in" style="padding:0;overflow:hidden">
+          <div style="position:relative">
+            <img src="./assets/smear_all.png" alt="ALL leukemia blood smear" style="width:100%;display:block;border-radius:20px 20px 0 0"/>
+            <div style="position:absolute;top:10px;left:10px;padding:4px 12px;border-radius:99px;background:rgba(255,55,95,.9);color:#fff;font-size:.75rem;font-weight:700">ALL LEUKEMIA</div>
+          </div>
+          <div style="padding:16px">
+            <div style="font-weight:700;margin-bottom:5px">Acute Lymphoblastic Leukemia (ALL)</div>
+            <div style="font-size:.8rem;color:var(--text2);margin-bottom:12px">Dense small lymphoblasts dominate. Very high nucleus-to-cytoplasm ratio. RBCs crowded out. 47 of 72 patients in this dataset.</div>
+            <button class="sample-btn" style="background:rgba(255,55,95,.12);border-color:rgba(255,55,95,.3);color:var(--pink)" onclick="loadSampleImage('./assets/smear_all.png','leukemia'); document.getElementById('smear-analysis').scrollIntoView({behavior:'smooth'})">🔬 Analyze this image</button>
+          </div>
+        </div>
+        <div class="glass-card fade-in" style="padding:0;overflow:hidden">
+          <div style="position:relative">
+            <img src="./assets/smear_aml.png" alt="AML leukemia blood smear" style="width:100%;display:block;border-radius:20px 20px 0 0"/>
+            <div style="position:absolute;top:10px;left:10px;padding:4px 12px;border-radius:99px;background:rgba(255,159,10,.9);color:#000;font-size:.75rem;font-weight:700">AML LEUKEMIA</div>
+          </div>
+          <div style="padding:16px">
+            <div style="font-weight:700;margin-bottom:5px">Acute Myeloid Leukemia (AML)</div>
+            <div style="font-size:.8rem;color:var(--text2);margin-bottom:12px">Large myeloblasts with kidney-shaped nuclei and pale cytoplasm. Auer rods may be visible. 25 of 72 patients in this dataset.</div>
+            <button class="sample-btn" style="background:rgba(255,159,10,.12);border-color:rgba(255,159,10,.3);color:var(--orange)" onclick="loadSampleImage('./assets/smear_aml.png','leukemia'); document.getElementById('smear-analysis').scrollIntoView({behavior:'smooth'})">🔬 Analyze this image</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ══ MODEL COMPARISON ═══════════════════════════════════════════════════ -->
 <section class="section section-alt" id="comparison">
   <div class="container">

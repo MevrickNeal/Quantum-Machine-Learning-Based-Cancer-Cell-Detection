@@ -7,6 +7,8 @@ const API = "http://127.0.0.1:8888";
 let apiOnline = false;
 let metricsData = null;
 let clinicalMeta = null;
+let patientCases = [];
+let shownCaseCount = 18;
 
 // ─── Init ────────────────────────────────────────────────────────────────────
 
@@ -15,7 +17,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   initParticleCanvas();
   initScrollAnimations();
   await checkApiHealth();
-  await Promise.all([loadMetrics(), loadClinicalMeta(), loadShapData()]);
+  await Promise.all([loadMetrics(), loadClinicalMeta(), loadShapData(), loadPatientCases()]);
   setupFormEvents();
   initSmearAnalysis();
 });
@@ -632,4 +634,139 @@ function initParticleCanvas() {
 function hexToRgb(hex) {
   const m=/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
   return m?[parseInt(m[1],16),parseInt(m[2],16),parseInt(m[3],16)]:[191,90,242];
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  REAL PATIENT CASE SHOWCASE
+// ════════════════════════════════════════════════════════════════════════════
+
+async function loadPatientCases() {
+  let raw = null;
+  if (apiOnline) { try { raw = await apiFetch("/cases"); } catch {} }
+  if (!raw) { try { const r = await fetch("./data/patient_cases.json"); raw = await r.json(); } catch { renderPatientGrid([]); return; } }
+  patientCases = raw.patients || raw || [];
+  const summary = raw.summary || {};
+  renderCaseSummary(summary);
+  renderPatientGrid(patientCases);
+  initCaseFilters();
+  document.getElementById("btn-show-more")?.addEventListener("click", () => {
+    shownCaseCount = patientCases.length;
+    renderPatientGrid(patientCases, getCaseFilter());
+    document.getElementById("btn-show-more").style.display = "none";
+  });
+}
+
+function renderCaseSummary(s) {
+  const correct = s.rf_loo_correct ?? patientCases.filter(p=>p.correct).length;
+  const total   = s.total_patients ?? patientCases.length;
+  const wrong   = total - correct;
+  const acc     = total > 0 ? (correct / total * 100).toFixed(1) + "%" : "—";
+  const el1 = document.getElementById("cs-correct");
+  const el2 = document.getElementById("cs-wrong");
+  const el3 = document.getElementById("cs-acc");
+  if (el1) el1.textContent = `${correct}/${total}`;
+  if (el2) el2.textContent = wrong;
+  if (el3) el3.textContent = acc;
+}
+
+function getCaseFilter() {
+  return document.querySelector(".case-filter-btn.active")?.dataset.filter || "all";
+}
+
+function initCaseFilters() {
+  document.querySelectorAll(".case-filter-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".case-filter-btn").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      shownCaseCount = 18;
+      renderPatientGrid(patientCases, btn.dataset.filter);
+    });
+  });
+}
+
+function filterCases(cases, filter) {
+  switch(filter) {
+    case "ALL":        return cases.filter(p => p.true_label === "ALL");
+    case "AML":        return cases.filter(p => p.true_label === "AML");
+    case "correct":    return cases.filter(p => p.correct);
+    case "wrong":      return cases.filter(p => !p.correct);
+    case "high-conf":  return cases.filter(p => p.confidence >= 0.9);
+    default:           return cases;
+  }
+}
+
+function renderPatientGrid(cases, filter = "all") {
+  const grid = document.getElementById("patient-grid"); if (!grid) return;
+  const filtered = filterCases(cases, filter);
+  const show     = filtered.slice(0, shownCaseCount);
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3)">No patients match this filter</div>`;
+    document.getElementById("btn-show-more").style.display = "none";
+    return;
+  }
+
+  grid.innerHTML = show.map(p => renderPatientCard(p)).join("");
+
+  // Show "Show All" button if more exist
+  const btn = document.getElementById("btn-show-more");
+  if (btn) {
+    if (filtered.length > shownCaseCount) {
+      btn.textContent = `Show All ${filtered.length} Patients`;
+      btn.style.display = "inline-flex";
+    } else {
+      btn.style.display = "none";
+    }
+  }
+
+  // Animate confidence bars
+  requestAnimationFrame(() => {
+    grid.querySelectorAll(".pc-bar-fill").forEach(bar => {
+      bar.style.width = bar.dataset.target;
+    });
+  });
+}
+
+function renderPatientCard(p) {
+  const isCorrect = p.correct;
+  const conf = (p.confidence * 100).toFixed(1);
+  const confColor = p.confidence > .9 ? "var(--green)" : p.confidence > .7 ? "var(--orange)" : "var(--pink)";
+  const labelColor = p.true_label === "ALL" ? "var(--pink)" : "var(--orange)";
+  const predMatch = p.predicted_label === p.true_label;
+  const genes = (p.top_genes || []).slice(0, 3).map(g => `<span class="pc-gene">${g.gene.split("_")[0]}</span>`).join("");
+
+  // CBC proxy highlights — flag abnormals
+  const cbcHtml = Object.entries(p.cbc_proxy || {}).slice(0, 5).map(([feat, val]) => {
+    const refs = { "WBC (K/µL)":{min:4.5,max:11}, "Blast Cells (%)":{min:0,max:2}, "Hemoglobin":{min:11.5,max:17.5}, "Platelets":{min:150,max:400} };
+    const r = refs[feat]; let abn = "";
+    if (r && (val < r.min || val > r.max)) abn = " abn";
+    return `<span class="pc-cbc-item${abn}">${feat.replace(/\s*\([^)]*\)/,"")}: ${val}</span>`;
+  }).join("");
+
+  // Model agreement
+  const agree = p.models_correct ?? 1;
+  const total  = p.model_votes ? Object.keys(p.model_votes).length : 1;
+  const agreeStr = `${agree}/${total} models agree`;
+
+  return `<div class="patient-card ${isCorrect ? "is-correct" : "is-wrong"} fade-in">
+    <div class="pc-header">
+      <span class="pc-id">${p.patient_id}</span>
+      <span class="pc-result-badge ${isCorrect ? "correct" : "wrong"}">${isCorrect ? "✅ Correct" : "❌ Missed"}</span>
+    </div>
+    <div class="pc-diagnosis">
+      <div class="pc-true">True Diagnosis → AI Prediction</div>
+      <div class="pc-labels">
+        <span class="pc-label ${p.true_label}" style="background:${p.true_label==="ALL"?"rgba(255,55,95,.15)":"rgba(255,159,10,.15)"};color:${labelColor}">${p.true_label}</span>
+        <span class="pc-arrow">→</span>
+        <span class="pc-label ${p.predicted_label}" style="background:${isCorrect?"rgba(48,209,88,.1)":"rgba(255,55,95,.1)"};color:${isCorrect?"var(--green)":"var(--pink)"}">${p.predicted_label} ${isCorrect?"✓":"✗"}</span>
+      </div>
+    </div>
+    <div class="pc-conf-bar">
+      <div class="pc-conf-label"><span>AI Confidence</span><span style="color:${confColor};font-family:'JetBrains Mono',monospace;font-weight:700">${conf}%</span></div>
+      <div class="pc-bar-track"><div class="pc-bar-fill" data-target="${conf}%" style="width:0%;background:${confColor}"></div></div>
+    </div>
+    ${genes ? `<div class="pc-genes"><div class="pc-genes-title">Key Genes</div><div class="pc-gene-list">${genes}</div></div>` : ""}
+    <div class="pc-cbc">${cbcHtml}</div>
+    <div class="models-agree">${agreeStr} · Gene profile: 7,129 features</div>
+  </div>`;
 }
