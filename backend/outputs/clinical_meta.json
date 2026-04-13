@@ -1,0 +1,187 @@
+{
+  "feature_names": [
+    "WBC (K/\u00b5L)",
+    "RBC (M/\u00b5L)",
+    "Hemoglobin (g/dL)",
+    "Hematocrit (%)",
+    "MCV (fL)",
+    "MCH (pg)",
+    "MCHC (g/dL)",
+    "Platelets (K/\u00b5L)",
+    "Neutrophils (%)",
+    "Lymphocytes (%)",
+    "Monocytes (%)",
+    "Eosinophils (%)",
+    "Basophils (%)",
+    "Blast Cells (%)"
+  ],
+  "feature_ranges": {
+    "WBC (K/\u00b5L)": [
+      0.1,
+      500.0
+    ],
+    "RBC (M/\u00b5L)": [
+      1.0,
+      7.0
+    ],
+    "Hemoglobin (g/dL)": [
+      3.0,
+      22.0
+    ],
+    "Hematocrit (%)": [
+      10.0,
+      62.0
+    ],
+    "MCV (fL)": [
+      50.0,
+      125.0
+    ],
+    "MCH (pg)": [
+      15.0,
+      42.0
+    ],
+    "MCHC (g/dL)": [
+      20.0,
+      40.0
+    ],
+    "Platelets (K/\u00b5L)": [
+      5.0,
+      1000.0
+    ],
+    "Neutrophils (%)": [
+      0.0,
+      95.0
+    ],
+    "Lymphocytes (%)": [
+      0.0,
+      98.0
+    ],
+    "Monocytes (%)": [
+      0.0,
+      30.0
+    ],
+    "Eosinophils (%)": [
+      0.0,
+      20.0
+    ],
+    "Basophils (%)": [
+      0.0,
+      5.0
+    ],
+    "Blast Cells (%)": [
+      0.0,
+      99.0
+    ]
+  },
+  "reference_ranges": {
+    "WBC (K/\u00b5L)": {
+      "min": 4.5,
+      "max": 11.0,
+      "unit": "K/\u00b5L"
+    },
+    "RBC (M/\u00b5L)": {
+      "min": 3.8,
+      "max": 6.0,
+      "unit": "M/\u00b5L"
+    },
+    "Hemoglobin (g/dL)": {
+      "min": 11.5,
+      "max": 17.5,
+      "unit": "g/dL"
+    },
+    "Hematocrit (%)": {
+      "min": 35.0,
+      "max": 52.0,
+      "unit": "%"
+    },
+    "MCV (fL)": {
+      "min": 80.0,
+      "max": 100.0,
+      "unit": "fL"
+    },
+    "MCH (pg)": {
+      "min": 27.0,
+      "max": 33.0,
+      "unit": "pg"
+    },
+    "MCHC (g/dL)": {
+      "min": 31.5,
+      "max": 36.0,
+      "unit": "g/dL"
+    },
+    "Platelets (K/\u00b5L)": {
+      "min": 150.0,
+      "max": 400.0,
+      "unit": "K/\u00b5L"
+    },
+    "Neutrophils (%)": {
+      "min": 40.0,
+      "max": 75.0,
+      "unit": "%"
+    },
+    "Lymphocytes (%)": {
+      "min": 20.0,
+      "max": 45.0,
+      "unit": "%"
+    },
+    "Monocytes (%)": {
+      "min": 2.0,
+      "max": 10.0,
+      "unit": "%"
+    },
+    "Eosinophils (%)": {
+      "min": 1.0,
+      "max": 6.0,
+      "unit": "%"
+    },
+    "Basophils (%)": {
+      "min": 0.0,
+      "max": 1.0,
+      "unit": "%"
+    },
+    "Blast Cells (%)": {
+      "min": 0.0,
+      "max": 2.0,
+      "unit": "%"
+    }
+  },
+  "normal_defaults": {
+    "WBC (K/\u00b5L)": 7.5,
+    "RBC (M/\u00b5L)": 4.8,
+    "Hemoglobin (g/dL)": 14.0,
+    "Hematocrit (%)": 42.0,
+    "MCV (fL)": 90.0,
+    "MCH (pg)": 30.0,
+    "MCHC (g/dL)": 34.0,
+    "Platelets (K/\u00b5L)": 260.0,
+    "Neutrophils (%)": 58.0,
+    "Lymphocytes (%)": 28.0,
+    "Monocytes (%)": 6.0,
+    "Eosinophils (%)": 3.0,
+    "Basophils (%)": 0.8,
+    "Blast Cells (%)": 0.3
+  },
+  "model_metrics": {
+    "accuracy": 1.0,
+    "f1": 1.0,
+    "roc_auc": 1.0
+  },
+  "feature_importances": {
+    "WBC (K/\u00b5L)": 3.729442073998981e-16,
+    "RBC (M/\u00b5L)": 1.388913551783972e-15,
+    "Hemoglobin (g/dL)": 6.365433539460067e-16,
+    "Hematocrit (%)": 8.477891021581114e-16,
+    "MCV (fL)": 1.291173224957107e-16,
+    "MCH (pg)": 1.138710947620383e-15,
+    "MCHC (g/dL)": 9.08187843338714e-16,
+    "Platelets (K/\u00b5L)": 2.0286047271641226e-15,
+    "Neutrophils (%)": 3.9407679866950377e-16,
+    "Lymphocytes (%)": 1.2082144361355092e-16,
+    "Monocytes (%)": 1.813556539627489e-15,
+    "Eosinophils (%)": -3.5237135803252706e-19,
+    "Basophils (%)": 1.6088219093691091e-15,
+    "Blast Cells (%)": 0.9999999999999887
+  },
+  "n_training_samples": 2400,
+  "disclaimer": "Research/educational only. NOT for clinical diagnosis."
+}

@@ -1,0 +1,238 @@
+{
+  "project": "Quantum ML Blood Cancer Detection",
+  "version": "2.0",
+  "dataset": "OpenML leukemia (ALL vs AML)",
+  "n_qubits": 4,
+  "models": {
+    "classical": {
+      "Logistic Regression": {
+        "accuracy": 0.9333333333333333,
+        "precision": 1.0,
+        "recall": 0.8,
+        "f1": 0.8888888888888888,
+        "roc_auc": 1.0,
+        "confusion_matrix": [
+          [
+            10,
+            0
+          ],
+          [
+            1,
+            4
+          ]
+        ]
+      },
+      "SVM (RBF)": {
+        "accuracy": 0.9333333333333333,
+        "precision": 1.0,
+        "recall": 0.8,
+        "f1": 0.8888888888888888,
+        "roc_auc": 0.98,
+        "confusion_matrix": [
+          [
+            10,
+            0
+          ],
+          [
+            1,
+            4
+          ]
+        ]
+      },
+      "Random Forest": {
+        "accuracy": 0.9333333333333333,
+        "precision": 1.0,
+        "recall": 0.8,
+        "f1": 0.8888888888888888,
+        "roc_auc": 1.0,
+        "confusion_matrix": [
+          [
+            10,
+            0
+          ],
+          [
+            1,
+            4
+          ]
+        ]
+      },
+      "Gradient Boosting": {
+        "accuracy": 0.8666666666666667,
+        "precision": 0.8,
+        "recall": 0.8,
+        "f1": 0.8,
+        "roc_auc": 0.98,
+        "confusion_matrix": [
+          [
+            9,
+            1
+          ],
+          [
+            1,
+            4
+          ]
+        ]
+      },
+      "MLP (Neural Net)": {
+        "accuracy": 0.9333333333333333,
+        "precision": 1.0,
+        "recall": 0.8,
+        "f1": 0.8888888888888888,
+        "roc_auc": 0.98,
+        "confusion_matrix": [
+          [
+            10,
+            0
+          ],
+          [
+            1,
+            4
+          ]
+        ]
+      }
+    },
+    "clinical_cbc": {
+      "metrics": {
+        "accuracy": 1.0,
+        "f1": 1.0,
+        "roc_auc": 1.0
+      },
+      "description": "Gradient Boosting on synthetic CBC data. Enables real-time patient risk screening."
+    }
+  },
+  "medical_disclaimer": "RESEARCH / EDUCATIONAL PROTOTYPE ONLY. NOT a medical device. NOT for clinical diagnosis or treatment.",
+  "dataset_info": {
+    "dataset": "OpenML leukemia (ALL vs AML)",
+    "n_samples": 72,
+    "n_features_raw": 7129,
+    "classes": [
+      "ALL",
+      "AML"
+    ],
+    "class_distribution": {
+      "ALL": 47,
+      "AML": 25
+    },
+    "top_selected_genes": [
+      "D14664_at",
+      "D49950_at",
+      "D88422_at",
+      "HG1612-HT1612_at",
+      "HG3494-HT3688_at",
+      "J05243_at",
+      "L09717_at",
+      "L47738_at",
+      "M11722_at",
+      "M13792_at"
+    ]
+  },
+  "pca_explained_variance": 0.5938,
+  "best_classical": {
+    "name": "Logistic Regression",
+    "metrics": {
+      "accuracy": 0.9333333333333333,
+      "precision": 1.0,
+      "recall": 0.8,
+      "f1": 0.8888888888888888,
+      "roc_auc": 1.0,
+      "confusion_matrix": [
+        [
+          10,
+          0
+        ],
+        [
+          1,
+          4
+        ]
+      ]
+    }
+  },
+  "wall_time_seconds": 12.8,
+  "all_model_metrics": {
+    "Logistic Regression": {
+      "accuracy": 0.9333333333333333,
+      "precision": 1.0,
+      "recall": 0.8,
+      "f1": 0.8888888888888888,
+      "roc_auc": 1.0,
+      "confusion_matrix": [
+        [
+          10,
+          0
+        ],
+        [
+          1,
+          4
+        ]
+      ]
+    },
+    "SVM (RBF)": {
+      "accuracy": 0.9333333333333333,
+      "precision": 1.0,
+      "recall": 0.8,
+      "f1": 0.8888888888888888,
+      "roc_auc": 0.98,
+      "confusion_matrix": [
+        [
+          10,
+          0
+        ],
+        [
+          1,
+          4
+        ]
+      ]
+    },
+    "Random Forest": {
+      "accuracy": 0.9333333333333333,
+      "precision": 1.0,
+      "recall": 0.8,
+      "f1": 0.8888888888888888,
+      "roc_auc": 1.0,
+      "confusion_matrix": [
+        [
+          10,
+          0
+        ],
+        [
+          1,
+          4
+        ]
+      ]
+    },
+    "Gradient Boosting": {
+      "accuracy": 0.8666666666666667,
+      "precision": 0.8,
+      "recall": 0.8,
+      "f1": 0.8,
+      "roc_auc": 0.98,
+      "confusion_matrix": [
+        [
+          9,
+          1
+        ],
+        [
+          1,
+          4
+        ]
+      ]
+    },
+    "MLP (Neural Net)": {
+      "accuracy": 0.9333333333333333,
+      "precision": 1.0,
+      "recall": 0.8,
+      "f1": 0.8888888888888888,
+      "roc_auc": 0.98,
+      "confusion_matrix": [
+        [
+          10,
+          0
+        ],
+        [
+          1,
+          4
+        ]
+      ]
+    }
+  }
+}

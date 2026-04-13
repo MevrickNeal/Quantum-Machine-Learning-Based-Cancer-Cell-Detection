@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quantum Blood Cancer Detector | QML Early Detection System</title>
+  <meta name="description" content="Early-stage blood cancer (leukemia) detection using Quantum Machine Learning — Qiskit VQC, QSVM, and PennyLane QNN compared against classical baselines." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+
+<!-- ═══ QUANTUM PARTICLE HERO ════════════════════════════════════════════════ -->
+<header class="hero" id="hero">
+  <canvas id="quantum-canvas" aria-hidden="true"></canvas>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      Quantum ML Research · Local Aer Simulator
+    </div>
+    <h1>Quantum Blood Cancer<br/><span class="gradient-text">Early Detection System</span></h1>
+    <p class="hero-sub">
+      A hybrid Quantum–Classical ML pipeline detecting early-stage leukemia (ALL vs AML)
+      using Qiskit VQC, QSVM, PennyLane QNN, and classical baselines on gene expression data.
+    </p>
+    <div class="hero-buttons">
+      <a href="#screening" class="btn btn-primary" id="hero-screen-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        Check My Risk
+      </a>
+      <a href="#comparison" class="btn btn-ghost">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        View Results
+      </a>
+    </div>
+    <div class="disclaimer-banner">
+      ⚠ Educational/Research Prototype Only — NOT for clinical diagnosis or treatment decisions
+    </div>
+  </div>
+  <div class="hero-scroll-indicator">
+    <div class="scroll-dot"></div>
+  </div>
+</header>
+
+<!-- ═══ KPI STRIP ═════════════════════════════════════════════════════════════ -->
+<section class="kpi-strip" id="kpi-strip">
+  <div class="container">
+    <div class="kpi-grid">
+      <article class="kpi-card" id="kpi-samples">
+        <div class="kpi-icon">🧬</div>
+        <div class="kpi-value" data-target="72">—</div>
+        <div class="kpi-label">Gene Expression Samples</div>
+      </article>
+      <article class="kpi-card" id="kpi-genes">
+        <div class="kpi-icon">🔬</div>
+        <div class="kpi-value" data-target="7129">—</div>
+        <div class="kpi-label">Total Genetic Features</div>
+      </article>
+      <article class="kpi-card" id="kpi-models">
+        <div class="kpi-icon">⚛️</div>
+        <div class="kpi-value" data-target="8">—</div>
+        <div class="kpi-label">Models Compared</div>
+      </article>
+      <article class="kpi-card" id="kpi-auc">
+        <div class="kpi-icon">📈</div>
+        <div class="kpi-value" id="kpi-best-auc">—</div>
+        <div class="kpi-label">Best ROC-AUC</div>
+      </article>
+      <article class="kpi-card" id="kpi-qubits">
+        <div class="kpi-icon">💡</div>
+        <div class="kpi-value" data-target="4">—</div>
+        <div class="kpi-label">Qubits Used</div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PATIENT SCREENING PANEL ═══════════════════════════════════════════════ -->
+<section class="section" id="screening">
+  <div class="container">
+    <div class="section-header">
+      <h2>Patient Risk Screening</h2>
+      <p>Enter your Complete Blood Count (CBC) values for AI-powered early-stage leukemia risk assessment</p>
+    </div>
+
+    <div class="screening-grid">
+      <!-- Input Form -->
+      <div class="screening-form-panel glass-card">
+        <div class="form-header">
+          <div class="form-header-icon">🩸</div>
+          <div>
+            <h3>CBC Blood Test Values</h3>
+            <p class="muted-text">Enter values from your latest blood test report</p>
+          </div>
+        </div>
+
+        <div id="screening-form" class="cbc-form">
+          <!-- Dynamically populated from /clinical/meta -->
+          <div class="form-loading">
+            <div class="spinner"></div>
+            <span>Loading CBC parameters...</span>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button id="btn-analyze" class="btn btn-primary btn-full" type="button">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Analyze Risk (Quantum + Classical)
+          </button>
+          <button id="btn-reset" class="btn btn-ghost btn-full" type="button">Reset to Normal</button>
+          <button id="btn-demo-high" class="btn btn-ghost btn-full demo-btn" type="button">Load High-Risk Demo</button>
+        </div>
+      </div>
+
+      <!-- Risk Result -->
+      <div class="screening-result-panel">
+        <div id="risk-placeholder" class="risk-placeholder glass-card">
+          <div class="risk-placeholder-icon">⚛️</div>
+          <h3>Awaiting Analysis</h3>
+          <p>Enter CBC values and click <strong>Analyze Risk</strong> to get your quantum-powered risk assessment.</p>
+          <div class="pulse-ring"></div>
+        </div>
+
+        <div id="risk-result" class="risk-result glass-card" hidden>
+          <!-- Risk gauge -->
+          <div class="risk-gauge-container">
+            <svg id="risk-gauge-svg" viewBox="0 0 200 120" class="risk-gauge">
+              <defs>
+                <linearGradient id="gauge-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%"   stop-color="#00ff94"/>
+                  <stop offset="40%"  stop-color="#ffd700"/>
+                  <stop offset="70%"  stop-color="#ff8c00"/>
+                  <stop offset="100%" stop-color="#ff3366"/>
+                </linearGradient>
+              </defs>
+              <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#1a1a3e" stroke-width="16" stroke-linecap="round"/>
+              <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#gauge-gradient)" stroke-width="16" stroke-linecap="round" opacity="0.3"/>
+              <path id="gauge-arc" d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#6c63ff" stroke-width="16" stroke-linecap="round" stroke-dasharray="0 251"/>
+              <circle id="gauge-needle" cx="100" cy="100" r="6" fill="#fff"/>
+              <text x="100" y="88" text-anchor="middle" fill="#fff" font-size="22" font-weight="700" id="gauge-percent">0%</text>
+              <text x="100" y="104" text-anchor="middle" fill="#aaa" font-size="9" id="gauge-label-text">Risk Score</text>
+            </svg>
+          </div>
+
+          <div id="risk-level-badge" class="risk-level-badge">LOW</div>
+          <div id="risk-label-text" class="risk-label-text">Analyzing...</div>
+
+          <!-- Factors -->
+          <div class="factors-section">
+            <h4>CBC Parameter Analysis</h4>
+            <div id="factors-list" class="factors-list"></div>
+          </div>
+
+          <div class="result-disclaimer">
+            ⚠ Research tool only — consult a licensed hematologist for any medical concerns.
+          </div>
+        </div>
+
+        <!-- Processing state -->
+        <div id="risk-loading" class="risk-loading glass-card" hidden>
+          <div class="quantum-spinner">
+            <div class="qs-ring qs-r1"></div>
+            <div class="qs-ring qs-r2"></div>
+            <div class="qs-ring qs-r3"></div>
+            <div class="qs-core">⚛️</div>
+          </div>
+          <p>Running quantum + classical analysis...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ MODEL COMPARISON ═══════════════════════════════════════════════════════ -->
+<section class="section section-dark" id="comparison">
+  <div class="container">
+    <div class="section-header">
+      <h2>Classical vs Quantum Model Comparison</h2>
+      <p>Head-to-head performance on the OpenML Leukemia dataset (ALL vs AML, 72 samples, 7129 genes)</p>
+    </div>
+
+    <div id="comparison-loading" class="loading-block">
+      <div class="spinner"></div>
+      <span>Loading model results...</span>
+    </div>
+
+    <div id="comparison-content" hidden>
+      <!-- Comparison table -->
+      <div class="table-wrapper glass-card">
+        <table id="metrics-table" class="metrics-table">
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Type</th>
+              <th>Accuracy</th>
+              <th>Precision</th>
+              <th>Recall</th>
+              <th>F1 Score</th>
+              <th>ROC-AUC</th>
+            </tr>
+          </thead>
+          <tbody id="metrics-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- Charts row -->
+      <div class="charts-row">
+        <div class="chart-card glass-card">
+          <h3 class="chart-title">Model Performance Comparison</h3>
+          <img id="img-comparison" src="./assets/model_comparison.png" alt="Model comparison bar chart"
+               class="chart-img" onerror="this.style.display='none'" />
+        </div>
+        <div class="chart-card glass-card">
+          <h3 class="chart-title">ROC Curves — All Models</h3>
+          <img id="img-roc" src="./assets/roc_curves.png" alt="ROC curves"
+               class="chart-img" onerror="this.style.display='none'" />
+        </div>
+      </div>
+
+      <!-- Confusion matrices -->
+      <div id="cm-grid" class="cm-grid"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SHAP EXPLAINABILITY ═══════════════════════════════════════════════════ -->
+<section class="section" id="explainability">
+  <div class="container">
+    <div class="section-header">
+      <h2>AI Explainability — Which Genes Matter?</h2>
+      <p>SHAP (SHapley Additive exPlanations) values reveal which genetic features drive each prediction</p>
+    </div>
+
+    <div class="explainability-grid">
+      <div class="glass-card">
+        <h3>Top Predictive Gene Features</h3>
+        <div id="shap-chart-container">
+          <img src="./assets/shap_bar.png" alt="SHAP feature importance"
+               class="chart-img" id="img-shap"
+               onerror="document.getElementById('shap-fallback').style.display='block'; this.style.display='none'" />
+          <div id="shap-fallback" style="display:none">
+            <canvas id="shap-canvas" width="700" height="400"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="glass-card explainability-info">
+        <h3>How SHAP Works</h3>
+        <div class="info-steps">
+          <div class="info-step">
+            <div class="step-num">01</div>
+            <div>
+              <strong>Game Theory Foundation</strong>
+              <p>SHAP uses Shapley values from cooperative game theory to fairly distribute prediction credit among features.</p>
+            </div>
+          </div>
+          <div class="info-step">
+            <div class="step-num">02</div>
+            <div>
+              <strong>TreeExplainer</strong>
+              <p>Applied to our Random Forest model to compute exact SHAP values for each gene's contribution.</p>
+            </div>
+          </div>
+          <div class="info-step">
+            <div class="step-num">03</div>
+            <div>
+              <strong>Clinical Relevance</strong>
+              <p>High-importance genes may represent known oncogenes or tumor suppressors relevant to ALL/AML differentiation.</p>
+            </div>
+          </div>
+        </div>
+        <div id="shap-top-list" class="shap-top-list"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ QUANTUM CIRCUIT INFO ══════════════════════════════════════════════════ -->
+<section class="section section-dark" id="quantum">
+  <div class="container">
+    <div class="section-header">
+      <h2>Quantum Architecture</h2>
+      <p>Three quantum strategies compared on the same 4-qubit feature space</p>
+    </div>
+
+    <div class="quantum-grid">
+      <div class="quantum-card glass-card">
+        <div class="qcard-header">
+          <div class="qcard-icon vqc-color">VQC</div>
+          <div>
+            <h3>Variational Quantum Classifier</h3>
+            <span class="tag">Qiskit</span>
+          </div>
+        </div>
+        <div class="circuit-diagram">
+          <div class="circuit-line" data-qubit="q0">
+            <span class="qubit-label">q₀</span>
+            <div class="gate gate-H">H</div>
+            <div class="gate gate-R">Rz</div>
+            <div class="gate gate-CNOT">●</div>
+            <div class="gate gate-R">Ry</div>
+            <div class="wire"></div>
+            <div class="gate gate-M">M</div>
+          </div>
+          <div class="circuit-line" data-qubit="q1">
+            <span class="qubit-label">q₁</span>
+            <div class="gate gate-H">H</div>
+            <div class="gate gate-R">Rz</div>
+            <div class="gate gate-CNOT-t">⊕</div>
+            <div class="gate gate-R">Ry</div>
+            <div class="wire"></div>
+            <div class="gate gate-M">M</div>
+          </div>
+          <div class="circuit-line" data-qubit="q2">
+            <span class="qubit-label">q₂</span>
+            <div class="gate gate-H">H</div>
+            <div class="gate gate-R">Rx</div>
+            <div class="gate gate-CNOT">●</div>
+            <div class="gate gate-R">Ry</div>
+            <div class="wire"></div>
+            <div class="gate gate-M">M</div>
+          </div>
+          <div class="circuit-line" data-qubit="q3">
+            <span class="qubit-label">q₃</span>
+            <div class="gate gate-H">H</div>
+            <div class="gate gate-R">Rx</div>
+            <div class="gate gate-CNOT-t">⊕</div>
+            <div class="gate gate-R">Ry</div>
+            <div class="wire"></div>
+            <div class="gate gate-M">M</div>
+          </div>
+        </div>
+        <div class="circuit-caption">ZZFeatureMap(reps=2) + EfficientSU2(reps=2) · COBYLA optimizer</div>
+        <div id="vqc-metrics" class="inline-metrics"></div>
+      </div>
+
+      <div class="quantum-card glass-card">
+        <div class="qcard-header">
+          <div class="qcard-icon qsvm-color">QSVM</div>
+          <div>
+            <h3>Quantum Kernel SVM</h3>
+            <span class="tag">Qiskit</span>
+          </div>
+        </div>
+        <div class="circuit-diagram">
+          <div class="circuit-line" data-qubit="q0">
+            <span class="qubit-label">q₀</span>
+            <div class="gate gate-phi">φ(x)</div>
+            <div class="gate gate-phi" style="opacity:0.6">φ(x')</div>
+            <div class="wire"></div>
+            <div class="gate gate-M">M</div>
+          </div>
+          <div class="circuit-line" data-qubit="q1">
+            <span class="qubit-label">q₁</span>
+            <div class="gate gate-phi">φ(x)</div>
+            <div class="gate gate-phi" style="opacity:0.6">φ(x')</div>
+            <div class="wire"></div>
+            <div class="gate gate-M">M</div>
+          </div>
+          <div class="circuit-line" data-qubit="q2">
+            <span class="qubit-label">q₂</span>
+            <div class="gate gate-phi">φ(x)</div>
+            <div class="gate gate-phi" style="opacity:0.6">φ(x')</div>
+            <div class="wire"></div>
+            <div class="gate gate-M">M</div>
+          </div>
+          <div class="circuit-line" data-qubit="q3">
+            <span class="qubit-label">q₃</span>
+            <div class="gate gate-phi">φ(x)</div>
+            <div class="gate gate-phi" style="opacity:0.6">φ(x')</div>
+            <div class="wire"></div>
+            <div class="gate gate-M">M</div>
+          </div>
+        </div>
+        <div class="circuit-caption">FidelityQuantumKernel · ZZFeatureMap(reps=2) · Classical SVC(C=1.0)</div>
+        <div id="qsvm-metrics" class="inline-metrics"></div>
+      </div>
+
+      <div class="quantum-card glass-card">
+        <div class="qcard-header">
+          <div class="qcard-icon pl-color">QNN</div>
+          <div>
+            <h3>Quantum Neural Network</h3>
+            <span class="tag">PennyLane</span>
+          </div>
+        </div>
+        <div class="circuit-diagram">
+          <div class="circuit-line" data-qubit="q0">
+            <span class="qubit-label">q₀</span>
+            <div class="gate gate-R">Rx(x₀)</div>
+            <div class="gate gate-U">U(θ)</div>
+            <div class="gate gate-CNOT">●</div>
+            <div class="wire"></div>
+            <div class="gate gate-exp">&lt;Z&gt;</div>
+          </div>
+          <div class="circuit-line" data-qubit="q1">
+            <span class="qubit-label">q₁</span>
+            <div class="gate gate-R">Rx(x₁)</div>
+            <div class="gate gate-U">U(θ)</div>
+            <div class="gate gate-CNOT-t">⊕</div>
+            <div class="wire"></div>
+            <div class="gate gate-exp">&lt;Z&gt;</div>
+          </div>
+          <div class="circuit-line" data-qubit="q2">
+            <span class="qubit-label">q₂</span>
+            <div class="gate gate-R">Rx(x₂)</div>
+            <div class="gate gate-U">U(θ)</div>
+            <div class="gate gate-CNOT">●</div>
+            <div class="wire"></div>
+            <div class="gate gate-exp">&lt;Z&gt;</div>
+          </div>
+          <div class="circuit-line" data-qubit="q3">
+            <span class="qubit-label">q₃</span>
+            <div class="gate gate-R">Rx(x₃)</div>
+            <div class="gate gate-U">U(θ)</div>
+            <div class="gate gate-CNOT-t">⊕</div>
+            <div class="wire"></div>
+            <div class="gate gate-exp">&lt;Z&gt;</div>
+          </div>
+        </div>
+        <div class="circuit-caption">AngleEmbedding(Rx) + StronglyEntanglingLayers(3 layers) · Adam(lr=0.02)</div>
+        <div id="pl-metrics" class="inline-metrics"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ HOW IT WORKS ══════════════════════════════════════════════════════════ -->
+<section class="section" id="methodology">
+  <div class="container">
+    <div class="section-header">
+      <h2>Pipeline Architecture</h2>
+      <p>End-to-end quantum–classical machine learning workflow</p>
+    </div>
+
+    <div class="pipeline-flow">
+      <div class="pipe-step glass-card">
+        <div class="pipe-icon">📊</div>
+        <div class="pipe-num">01</div>
+        <h4>Data Ingestion</h4>
+        <p>OpenML Leukemia dataset — 72 patient samples, 7129 gene expression features (ALL vs AML)</p>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step glass-card">
+        <div class="pipe-icon">🧮</div>
+        <div class="pipe-num">02</div>
+        <h4>Feature Engineering</h4>
+        <p>QuantileTransformer → SelectKBest (ANOVA F-test) → PCA reduction to 4 quantum features</p>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step glass-card">
+        <div class="pipe-icon">⚛️</div>
+        <div class="pipe-num">03</div>
+        <h4>Quantum Encoding</h4>
+        <p>Angle encoding maps PCA features to qubit rotations [0, 2π] via ZZFeatureMap / AngleEmbedding</p>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step glass-card">
+        <div class="pipe-icon">🤖</div>
+        <div class="pipe-num">04</div>
+        <h4>Model Training</h4>
+        <p>5 classical + 3 quantum models trained on Qiskit Aer statevector simulator</p>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step glass-card">
+        <div class="pipe-icon">📈</div>
+        <div class="pipe-num">05</div>
+        <h4>Evaluation & XAI</h4>
+        <p>Accuracy, F1, ROC-AUC metrics · SHAP gene importance · Confusion matrices</p>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step glass-card">
+        <div class="pipe-icon">🏥</div>
+        <div class="pipe-num">06</div>
+        <h4>Clinical Screening</h4>
+        <p>CBC-based risk model provides patient-facing early-stage leukemia risk scores</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ API STATUS ════════════════════════════════════════════════════════════ -->
+<div id="api-status-bar" class="api-status-bar">
+  <div class="api-dot" id="api-dot"></div>
+  <span id="api-status-text">Connecting to API...</span>
+  <a href="http://127.0.0.1:8888/docs" target="_blank" rel="noreferrer" class="api-docs-link">API Docs →</a>
+</div>
+
+<!-- ═══ FOOTER ════════════════════════════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <div class="footer-logo">⚛️ QML Cancer Detect</div>
+        <p class="footer-desc">Open-source quantum machine learning research for early blood cancer detection.</p>
+        <p class="footer-warning">NOT a medical device. For research only.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Stack</h5>
+        <ul>
+          <li>Qiskit 1.x + Aer</li>
+          <li>qiskit-machine-learning</li>
+          <li>PennyLane</li>
+          <li>FastAPI + Uvicorn</li>
+          <li>scikit-learn · SHAP</li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Dataset</h5>
+        <ul>
+          <li>OpenML Leukemia (ALL vs AML)</li>
+          <li>72 samples · 7129 genes</li>
+          <li>MedMNIST BloodMNIST</li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Links</h5>
+        <ul>
+          <li><a href="https://github.com/MevrickNeal/Quantum-Machine-Learning-Based-Cancer-Cell-Detection" target="_blank">GitHub Repo</a></li>
+          <li><a href="http://127.0.0.1:8888/docs" target="_blank">API Documentation</a></li>
+          <li><a href="https://www.ibm.com/quantum/qiskit" target="_blank">IBM Qiskit</a></li>
+          <li><a href="https://pennylane.ai" target="_blank">PennyLane</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>Built with Python, Qiskit, PennyLane, FastAPI, and vanilla JS · Research prototype, not for clinical use</p>
+    </div>
+  </div>
+</footer>
+
+<script src="./app.js"></script>
+</body>
+</html>

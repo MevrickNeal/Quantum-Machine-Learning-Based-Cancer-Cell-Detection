@@ -1,0 +1,25 @@
+{
+  "dataset": "OpenML leukemia (ALL vs AML)",
+  "n_samples": 72,
+  "n_features_raw": 7129,
+  "classes": [
+    "ALL",
+    "AML"
+  ],
+  "class_distribution": {
+    "ALL": 47,
+    "AML": 25
+  },
+  "top_selected_genes": [
+    "D14664_at",
+    "D49950_at",
+    "D88422_at",
+    "HG1612-HT1612_at",
+    "HG3494-HT3688_at",
+    "J05243_at",
+    "L09717_at",
+    "L47738_at",
+    "M11722_at",
+    "M13792_at"
+  ]
+}
