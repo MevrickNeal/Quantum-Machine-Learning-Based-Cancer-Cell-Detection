@@ -1,0 +1,64 @@
+{
+  "dataset": "Golub et al. 1999 (OpenML #1104)",
+  "dataset_url": "https://www.openml.org/d/1104",
+  "paper": "Golub TR et al., Science 286, 1999",
+  "total_patients": 72,
+  "n_genes": 7129,
+  "n_selected_genes": 64,
+  "classes": [
+    "ALL",
+    "AML"
+  ],
+  "n_ALL": 47,
+  "n_AML": 25,
+  "rf_loo_correct": 71,
+  "rf_loo_accuracy": 0.9861,
+  "model_accuracies": {
+    "Random Forest": 0.9861,
+    "Logistic Regression": 0.9861,
+    "Gradient Boosting": 0.8333
+  },
+  "top_predictive_genes": [
+    {
+      "gene": "X95735_at",
+      "importance": 0.09939
+    },
+    {
+      "gene": "M23197_at",
+      "importance": 0.08899
+    },
+    {
+      "gene": "M27891_at",
+      "importance": 0.07597
+    },
+    {
+      "gene": "M31523_at",
+      "importance": 0.06127
+    },
+    {
+      "gene": "U46499_at",
+      "importance": 0.05902
+    },
+    {
+      "gene": "L09209_s_at",
+      "importance": 0.05331
+    },
+    {
+      "gene": "M84526_at",
+      "importance": 0.04744
+    },
+    {
+      "gene": "M92287_at",
+      "importance": 0.04139
+    },
+    {
+      "gene": "D88422_at",
+      "importance": 0.04093
+    },
+    {
+      "gene": "M11722_at",
+      "importance": 0.03418
+    }
+  ],
+  "generated_at": "2026-04-13T18:45:38Z"
+}
