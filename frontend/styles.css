@@ -1,7 +1,20 @@
 /* ════════════════════════════════════════════════════════════════════════════
    Quantum Blood Cancer Detection — macOS Ventura Glassmorphism Theme
-   Day / Night mode · Colorful frosted glass · Slick & user-friendly
-   ════════════════════════════════════════════════════════════════════════════ */
+   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+/* ─── Hard Mobile Reset ──────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box !important; }
+html, body { 
+  overflow-x: hidden !important; 
+  width: 100% !important; 
+  margin: 0 !important; padding: 0 !important;
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  font-family: 'Space Grotesk', -apple-system, sans-serif;
+  color: var(--text); background: var(--bg);
+  line-height: 1.5; -webkit-font-smoothing: antialiased;
+}
 
 /* ─── Tokens ─────────────────────────────────────────────────────────────── */
 :root {
@@ -55,14 +68,6 @@
 }
 
 /* ─── Reset ──────────────────────────────────────────────────────────────── */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;font-size:16px}
-body { 
-  overflow-x: hidden; width: 100%;
-  font-family: 'Space Grotesk', -apple-system, sans-serif;
-  color: var(--text); background: var(--bg);
-  line-height: 1.5; -webkit-font-smoothing: antialiased;
-}
 a{color:var(--blue);text-decoration:none}
 a:hover{color:var(--purple)}
 img{max-width:100%;height:auto}
@@ -90,13 +95,16 @@ ul{list-style:none}
 .top-nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 15px 5%; background: rgba(6,6,16,0.8);
+  padding: 10px 4%; background: rgba(6,6,16,0.8);
   backdrop-filter: blur(20px); border-bottom: 1px solid var(--border);
 }
-.nav-links { display: flex; align-items: center; gap: 20px; }
-@media (max-width: 600px) {
-  .nav-links { gap: 10px; font-size: 0.8rem; }
+.nav-links { display: flex; align-items: center; gap: 15px; }
+@media (max-width: 800px) {
+  .nav-links { gap: 8px; }
   .nav-link-hide { display: none; }
+}
+@media (max-width: 380px) {
+  .nav-logo span { display: none; }
 }
 .logo-svg { width: 32px; height: 32px; margin-right: 10px; }
 .logo-circle { fill: none; stroke: var(--purple); stroke-width: 4; opacity: 0.3; }
@@ -435,12 +443,9 @@ ul{list-style:none}
    PATIENT SCREENING
    ══════════════════════════════════════════════════════════════════════════ */
 .screening-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
-@media(max-width:880px){.screening-grid{grid-template-columns:1fr}}
-.form-header{display:flex;gap:16px;align-items:flex-start;margin-bottom:22px}
-.form-header-icon{font-size:2rem;flex-shrink:0}
-.form-header h3{font-size:1.15rem;font-weight:700;margin-bottom:3px}
+@media (max-width: 1000px) { .screening-grid { grid-template-columns: 1fr; } }
 .cbc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:480px){.cbc-grid{grid-template-columns:1fr}}
+@media (max-width: 500px) { .cbc-grid { grid-template-columns: 1fr !important; } }
 .cbc-row{display:flex;flex-direction:column;gap:3px}
 .cbc-row label{font-size:.75rem;color:var(--text2);font-weight:500}
 .cbc-ref{color:var(--text3);font-size:.7rem;font-weight:400}
@@ -804,3 +809,35 @@ ul{list-style:none}
 
 /* ─── Responsive footer ───────────────────────────────────────────────────── */
 @media(max-width:600px){.nav-links .nav-link-hide{display:none}}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE HARD FIXES (MOBILE-FIRST)
+   ══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 800px) {
+  html, body { overflow-x: hidden !important; width: 100% !important; position: relative !important; }
+  .hero-container { flex-direction: column !important; text-align: center !important; gap: 40px !important; }
+  .hero-content { align-items: center !important; }
+  .hero-btns { justify-content: center !important; width: 100% !important; }
+  .hero-team { justify-content: center !important; width: 100% !important; }
+  .team-frame { max-width: 100% !important; }
+
+  .kpi-grid { grid-template-columns: 1fr !important; }
+  .cbc-grid { grid-template-columns: 1fr !important; }
+  .screening-grid { grid-template-columns: 1fr !important; }
+  .dataset-grid { grid-template-columns: 1fr !important; }
+  .guide-grid { grid-template-columns: 1fr !important; }
+  .charts-row { flex-direction: column !important; }
+  .pipeline-flow { flex-direction: column !important; align-items: center !important; }
+  .pipe-arrow { transform: rotate(90deg); margin: 10px 0; }
+
+  .section { padding: 40px 0 !important; }
+  .section-header h2 { font-size: 1.8rem !important; }
+  .image-break { height: 250px !important; }
+  
+  .top-nav { padding: 10px 15px !important; }
+  .nav-links { display: none !important; } /* Hide secondary links for clean mobile header */
+  .api-status-bar { font-size: 0.6rem !important; line-height: 1.4 !important; flex-direction: column !important; }
+  .api-docs-link { margin-top: 4px; }
+}
+
+[data-theme="light"] .team-glass { background: linear-gradient(180deg, transparent, rgba(255,255,255,0.2)); }
