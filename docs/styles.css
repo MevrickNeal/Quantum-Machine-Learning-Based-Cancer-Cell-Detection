@@ -6,8 +6,14 @@
 /* ─── Tokens ─────────────────────────────────────────────────────────────── */
 :root {
   /* macOS Ventura accent palette */
-  --purple: #bf5af2; --blue: #0a84ff; --green: #30d158;
-  --orange: #ff9f0a; --pink: #ff375f; --cyan: #64d2ff; --gold: #ffd60a;
+  --purple:     #5e5ce6; /* Electric Indigo */
+  --blue:       #0a84ff;
+  --green:      #30d158;
+  --orange:     #ff9f0a;
+  --pink:       #ff375f;
+  --cyan:       #64d2ff;
+  --gold:       #ffd60a;
+  --gradient:   linear-gradient(135deg, var(--purple), var(--cyan));
 
   /* Dark mode (default) */
   --bg:         #060610;
@@ -31,21 +37,21 @@
 }
 
 [data-theme="light"] {
-  --bg:         #f0f0f7;
+  --bg:         #fcfdfe;
   --bg2:        #ffffff;
-  --bg3:        #e8e8f0;
-  --card:       rgba(255,255,255,0.75);
-  --card-h:     rgba(255,255,255,0.90);
-  --border:     rgba(0,0,0,0.08);
-  --border-h:   rgba(191,90,242,0.4);
-  --text:       #1c1c1e;
-  --text2:      rgba(60,60,67,0.65);
-  --text3:      rgba(60,60,67,0.35);
-  --glass:      rgba(255,255,255,0.65);
-  --shadow:     0 4px 24px rgba(0,0,0,0.10), 0 1px 0 rgba(255,255,255,0.8) inset;
-  --hero-grad:  radial-gradient(ellipse at 20% 50%,rgba(191,90,242,0.12),transparent 55%),
-                radial-gradient(ellipse at 80% 30%,rgba(10,132,255,0.10),transparent 50%),
-                #f0f0f7;
+  --bg3:        #f0f4f9;
+  --card:       rgba(255,255,255,0.7);
+  --card-h:     rgba(255,255,255,0.95);
+  --border:     rgba(0,0,0,0.06);
+  --border-h:   rgba(10,132,255,0.4);
+  --text:       #0a0a0b;
+  --text2:      #3c3d42;
+  --text3:      #86878e;
+  --glass:      rgba(255,255,255,0.85);
+  --shadow:     0 4px 30px rgba(0,0,0,0.04), 0 1px 0 rgba(255,255,255,1) inset;
+  --hero-grad:  radial-gradient(ellipse at 20% 50%,rgba(10,132,255,0.08),transparent 55%),
+                radial-gradient(ellipse at 80% 30%,rgba(191,90,242,0.06),transparent 50%),
+                #ffffff;
 }
 
 /* ─── Reset ──────────────────────────────────────────────────────────────── */
@@ -92,10 +98,21 @@ ul{list-style:none}
   transition:background .4s;
 }
 [data-theme="light"] .top-nav{background:rgba(240,240,247,0.8)}
+.logo-svg { width: 32px; height: 32px; margin-right: 10px; }
+.logo-circle { fill: none; stroke: var(--purple); stroke-width: 4; opacity: 0.3; }
+.logo-path { 
+  fill: none; stroke: var(--cyan); stroke-width: 4; 
+  stroke-dasharray: 283; stroke-dashoffset: 283;
+  animation: logoStroke 3s ease-in-out infinite alternate;
+}
+@keyframes logoStroke { to { stroke-dashoffset: 0; } }
+.logo-text { fill: #fff; font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 40px; }
 .nav-logo{font-weight:700;font-size:1rem;display:flex;align-items:center;gap:8px}
 .nav-logo span{
   background:linear-gradient(135deg,var(--purple),var(--blue));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
 }
 .nav-links{display:flex;gap:20px;align-items:center}
 .nav-links a{font-size:.82rem;color:var(--text2);transition:color .2s}
@@ -137,7 +154,9 @@ ul{list-style:none}
 .section-header h2{
   font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;margin-bottom:14px;
   background:linear-gradient(135deg,var(--text),var(--cyan) 80%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
 }
 .section-header p{color:var(--text2);font-size:1.05rem;max-width:580px;margin:0 auto}
 .section-badge{
@@ -150,7 +169,9 @@ ul{list-style:none}
 /* ─── Typography ─────────────────────────────────────────────────────────── */
 .gradient-text{
   background:linear-gradient(135deg,var(--purple),var(--blue),var(--cyan));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
 }
 .muted{color:var(--text2);font-size:.88rem}
 .mono{font-family:'JetBrains Mono',monospace}
@@ -178,6 +199,103 @@ ul{list-style:none}
 .fade-in.visible{opacity:1;transform:none}
 /* Patient cards start visible (they're rendered on user action) */
 .patient-card{opacity:1;transform:none}
+
+/* Refined Glassmorphism */
+.glass-card {
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+
+/* ── Image Breaks ────────────────────────────────────────────────────────── */
+.image-break {
+  padding: 100px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+}
+.image-break-content {
+  position: relative;
+  z-index: 2;
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+}
+.image-break .img-3d {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  filter: drop-shadow(0 20px 40px rgba(0,0,0,0.2));
+}
+[data-theme="dark"] .image-break .img-3d {
+  filter: drop-shadow(0 20px 60px rgba(191,90,242,0.3));
+}
+.image-break .glow-aura {
+  width: 400px;
+  height: 400px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.15;
+}
+
+/* ── Bloch Sphere Visualizer ────────────────────────────────────────────── */
+.bloch-container {
+  width: 100%; height: 320px; display: flex; align-items: center; justify-content: center;
+  perspective: 800px; position: relative;
+}
+.bloch-wrap { position: relative; width: 200px; height: 200px; transform-style: preserve-3d; }
+.bloch-sphere {
+  width: 100%; height: 100%; border-radius: 50%;
+  border: 1px solid var(--border);
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.05), transparent);
+  position: relative; transform-style: preserve-3d;
+  animation: blochRotate 20s linear infinite;
+}
+@keyframes blochRotate { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
+
+.bloch-equator, .bloch-meridian {
+  position: absolute; border: 1px dashed var(--text3); border-radius: 50%;
+}
+.bloch-equator { inset: 0; transform: rotateX(90deg); }
+.bloch-meridian { inset: 0; transform: rotateY(90deg); }
+
+.bloch-axis-z, .bloch-axis-x, .bloch-axis-y {
+  position: absolute; background: var(--text3); opacity: 0.3;
+}
+.bloch-axis-z { width: 1px; height: 240px; left: 50%; top: -20px; }
+.bloch-axis-x { width: 240px; height: 1px; top: 50%; left: -20px; transform: rotateY(90deg); }
+.bloch-axis-y { width: 240px; height: 1px; top: 50%; left: -20px; transform: rotateZ(90deg); }
+
+.bloch-vector {
+  position: absolute; width: 2px; height: 100px;
+  background: var(--purple); left: 50%; bottom: 50%;
+  transform-origin: bottom center;
+  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  z-index: 10;
+}
+.vector-tip {
+  position: absolute; top: 0; left: -4px;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--purple); box-shadow: 0 0 15px var(--purple);
+}
+
+.bloch-labels { position: absolute; inset: -30px; pointer-events: none; font-size: .8rem; color: var(--text2); font-weight: 700; }
+.z-up { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); color: var(--purple); }
+.z-down { position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); }
+
+/* ── Quantum Circuit Schematics ─────────────────────────────────────────── */
+.circuit-svg {
+  width: 100%; max-width: 600px; height: auto;
+  filter: drop-shadow(0 0 20px rgba(10,132,255,0.1));
+}
+.gate-h { fill: var(--blue); }
+.gate-rz { fill: var(--purple); }
+.gate-zz { fill: var(--pink); }
+.gate-label { fill: #fff; font-size: 10px; font-weight: 700; dominant-baseline: middle; text-anchor: middle; }
+.qubit-line { stroke: var(--border); stroke-width: 1.5; }
 
 /* ══════════════════════════════════════════════════════════════════════════
    HERO
@@ -222,8 +340,10 @@ ul{list-style:none}
 }
 .gs-num{
   font-size:2.5rem;font-weight:900;font-family:'JetBrains Mono',monospace;
-  background:linear-gradient(135deg,var(--c1,var(--purple)),var(--c2,var(--blue)));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background:linear-gradient(135deg,var(--purple),var(--blue));
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
   margin-bottom:10px;
 }
 .gs-icon{font-size:2rem;margin-bottom:10px}
@@ -247,7 +367,9 @@ ul{list-style:none}
 .kpi-value{
   font-size:1.9rem;font-weight:800;font-family:'JetBrains Mono',monospace;
   background:linear-gradient(135deg,var(--purple),var(--cyan));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
 }
 .kpi-label{font-size:.73rem;color:var(--text3);margin-top:3px}
 
@@ -266,7 +388,9 @@ ul{list-style:none}
 .cbc-ref{color:var(--text3);font-size:.7rem;font-weight:400}
 .cbc-input-inline{display:flex;align-items:center;gap:6px}
 .cbc-row input[type="range"]{
-  flex:1;height:3px;cursor:pointer;-webkit-appearance:none;
+  flex:1;height:3px;cursor:pointer;
+  -webkit-appearance:none;
+  appearance:none;
   background:var(--bg3);border-radius:2px;outline:none;transition:background .2s;
 }
 .cbc-row input[type="range"]::-webkit-slider-thumb{

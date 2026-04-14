@@ -85,7 +85,10 @@ app.add_middleware(
 
 # Serve generated chart images
 if OUT_DIR.exists():
-    app.mount("/assets", StaticFiles(directory=str(OUT_DIR)), name="assets")
+    try:
+        app.mount("/assets", StaticFiles(directory=str(OUT_DIR)), name="assets")
+    except Exception as e:
+        print(f"[api] Warning: Could not mount assets: {e}")
 
 
 # ─── Schemas ──────────────────────────────────────────────────────────────────
@@ -112,7 +115,8 @@ class ClinicalInput(BaseModel):
 @app.get("/health", tags=["System"])
 def health():
     model_ready = _ensure_clinical_model()
-    metrics_ready = (OUT_DIR / "metrics.json").exists()
+    metrics_path = (OUT_DIR / "metrics.json")
+    metrics_ready = metrics_path.exists()
     return {
         "status":        "ok",
         "clinical_model_loaded": model_ready,
@@ -125,9 +129,13 @@ def health():
 def get_metrics():
     path = OUT_DIR / "metrics.json"
     if not path.exists():
+        # Fallback to local data folder if running in a weird environment
+        path = ROOT.parent / "frontend" / "data" / "metrics.json"
+
+    if not path.exists():
         raise HTTPException(
             status_code=404,
-            detail="Training not yet run. Execute: python train.py",
+            detail="Metric data artifacts not found. Deployment mismatch?",
         )
     with open(path) as f:
         return json.load(f)
@@ -137,7 +145,10 @@ def get_metrics():
 def get_shap():
     path = OUT_DIR / "shap_importances.json"
     if not path.exists():
-        raise HTTPException(status_code=404, detail="SHAP data not found. Run train.py first.")
+        path = ROOT.parent / "frontend" / "data" / "shap_importances.json"
+
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="SHAP data not found.")
     with open(path) as f:
         return json.load(f)
 
@@ -146,7 +157,7 @@ def get_shap():
 def get_dataset_info():
     path = OUT_DIR / "dataset_info.json"
     if not path.exists():
-        raise HTTPException(status_code=404, detail="Dataset info not found. Run train.py first.")
+        raise HTTPException(status_code=404, detail="Dataset info not found.")
     with open(path) as f:
         return json.load(f)
 
@@ -156,15 +167,18 @@ def get_clinical_meta():
     """Return feature definitions + reference ranges + defaults for the patient screening form."""
     path = OUT_DIR / "clinical_meta.json"
     if not path.exists():
-        # Return defaults even without training
-        from pipeline.clinical_model import FEATURE_NAMES, FEATURE_RANGES, REFERENCE_RANGES, NORMAL_DEFAULTS
-        return {
-            "feature_names":    FEATURE_NAMES,
-            "feature_ranges":   {k: list(v) for k, v in FEATURE_RANGES.items()},
-            "reference_ranges": REFERENCE_RANGES,
-            "normal_defaults":  NORMAL_DEFAULTS,
-            "model_trained":    False,
-        }
+        try:
+            from pipeline.clinical_model import FEATURE_NAMES, FEATURE_RANGES, REFERENCE_RANGES, NORMAL_DEFAULTS
+            return {
+                "feature_names":    FEATURE_NAMES,
+                "feature_ranges":   {k: list(v) for k, v in FEATURE_RANGES.items()},
+                "reference_ranges": REFERENCE_RANGES,
+                "normal_defaults":  NORMAL_DEFAULTS,
+                "model_trained":    False,
+            }
+        except:
+             raise HTTPException(status_code=404, detail="Clinical metadata source not found.")
+
     with open(path) as f:
         data = json.load(f)
     data["model_trained"] = (OUT_DIR / "clinical_model.joblib").exists()
@@ -175,21 +189,14 @@ def get_clinical_meta():
 def clinical_predict(body: ClinicalInput):
     """
     Predict blood cancer risk from Complete Blood Count values.
-
-    Returns risk level (LOW / MODERATE / HIGH / CRITICAL), risk score,
-    and per-feature concern flags.
     """
     if not _ensure_clinical_model():
-        # Try training on the fly (one-time cost)
-        try:
-            from pipeline.clinical_model import train_clinical_model
-            train_clinical_model(OUT_DIR)
-            _ensure_clinical_model()
-        except Exception as e:
-            raise HTTPException(
-                status_code=503,
-                detail=f"Clinical model not ready: {e}. Run python train.py first.",
-            )
+        # On Vercel, we can't always train on the fly due to permissions/size.
+        # So we expect the model to be bundled.
+        raise HTTPException(
+            status_code=503,
+            detail="Clinical model not bundled in deployment. Check backend/outputs/",
+        )
 
     from pipeline.clinical_model import FEATURE_NAMES, predict_risk, NORMAL_DEFAULTS
 
@@ -219,7 +226,10 @@ def serve_asset(filename: str):
     """Serve generated chart images."""
     path = OUT_DIR / filename
     if not path.exists() or not filename.endswith(".png"):
-        raise HTTPException(status_code=404, detail="Asset not found")
+        # Try frontend assets
+        path = ROOT.parent / "frontend" / "assets" / filename
+        if not path.exists():
+             raise HTTPException(status_code=404, detail="Asset not found")
     return FileResponse(str(path), media_type="image/png")
 
 
@@ -246,12 +256,7 @@ def root():
 
 @app.on_event("startup")
 async def startup_event():
-    loaded = _ensure_clinical_model()
-    print(f"[api] Clinical model loaded: {loaded}")
-    print(f"[api] Outputs dir: {OUT_DIR}")
-    if not (OUT_DIR / "metrics.json").exists():
-        print("[api] ⚠ Training not yet run — some endpoints will return 404")
-        print("[api]   Run:  python train.py  to generate all artifacts")
+    _ensure_clinical_model()
 
 
 if __name__ == "__main__":

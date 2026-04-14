@@ -3,18 +3,52 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Quantum Blood Cancer Detector | QML Early Detection</title>
-  <meta name="description" content="Early-stage leukemia detection via Quantum Machine Learning — Qiskit VQC, QSVM, PennyLane QNN. Includes live blood-smear cell highlighting and CBC screening tool."/>
+  <title>LeukoQ | Quantum Blood Cancer Detection</title>
+  <meta name="description" content="LeukoQ: Early-stage leukemia detection via Quantum Machine Learning — Qiskit VQC, QSVM, PennyLane QNN. End-to-end oncology research platform."/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="./styles.css"/>
+  <script src="./bloch_sphere.js" defer></script>
+  <style>
+    .smart-tag {
+      position: absolute;
+      background: var(--purple); color: #fff;
+      padding: 4px 10px; border-radius: 6px;
+      font-size: .65rem; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      box-shadow: 0 4px 12px rgba(191,90,242,0.4);
+      pointer-events: none; transform: translate(-50%, -50%);
+      animation: pulseTag 2s infinite;
+    }
+    @keyframes pulseTag { 
+      0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.05); }
+    }
+    .smart-tag {
+      position: absolute;
+      background: var(--purple); color: #fff;
+      padding: 4px 10px; border-radius: 6px;
+      font-size: .65rem; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      box-shadow: 0 4px 12px rgba(191,90,242,0.4);
+      pointer-events: none; transform: translate(-50%, -50%);
+      animation: pulseTag 2s infinite;
+    }
+  </style>
 </head>
 <body>
 
 <!-- ══ TOP NAV ═══════════════════════════════════════════════════════════ -->
 <nav class="top-nav">
-  <div class="nav-logo">⚛️ <span>QML Cancer Detect</span></div>
+  <div class="nav-logo">
+    <svg class="logo-svg" viewBox="0 0 100 100">
+      <circle class="logo-circle" cx="50" cy="50" r="45" />
+      <path class="logo-path" d="M50 5 a45 45 0 0 1 0 90 a45 45 0 0 1 0 -90" />
+      <text class="logo-text" x="50" y="65" text-anchor="middle">Q</text>
+    </svg>
+    <span>LeukoQ</span>
+  </div>
   <div class="nav-links">
     <a href="#how-to-use" class="nav-link-hide">Guide</a>
     <a href="#screening" class="nav-link-hide">Screen</a>
@@ -31,24 +65,48 @@
 <!-- ══ HERO ══════════════════════════════════════════════════════════════ -->
 <header class="hero" id="hero">
   <canvas id="quantum-canvas" aria-hidden="true"></canvas>
-  <div class="hero-content">
-    <div class="hero-badge"><span class="badge-dot"></span>Quantum ML · Local Aer Simulator · No Hardware Needed</div>
-    <h1>Quantum Blood Cancer<br/><span class="gradient-text">Early Detection System</span></h1>
-    <p class="hero-sub">
-      An end-to-end hybrid Quantum–Classical pipeline that detects early-stage leukemia (ALL vs AML)
-      from gene expression data and CBC blood tests — with live microscopy cell highlighting.
-    </p>
-    <div class="hero-btns">
-      <a href="#how-to-use" class="btn btn-primary" id="hero-guide-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-        How to Use This Tool
-      </a>
-      <a href="#screening" class="btn btn-ghost">🩸 Screen My CBC</a>
-      <a href="#smear-analysis" class="btn btn-ghost">🔬 Analyze Blood Image</a>
+  <div class="hero-container">
+    <div class="hero-content">
+      <div class="hero-badge"><span class="badge-dot"></span>LeukoQ · End-to-End QML Oncology</div>
+      <h1>Leuko<span class="gradient-text">Q</span></h1>
+      <p class="hero-sub" style="font-size:1.4rem;font-weight:600;margin-bottom:12px">Early Cancer Detection via Hybrid Quantum Compute</p>
+      <p class="hero-desc">
+        A clinical-grade research platform detecting leukemia (ALL vs AML) from gene expression and blood smears using 
+        Quantum Variational Circuits and Computer Vision.
+      </p>
+      <div class="hero-btns">
+        <a href="#how-to-use" class="btn btn-primary" id="hero-guide-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+          Quick Start Guide
+        </a>
+        <a href="#screening" class="btn btn-ghost">🩸 CBC Screen</a>
+        <a href="#smear-analysis" class="btn btn-ghost">🔬 Cell Vision</a>
+      </div>
     </div>
-    <div class="disclaimer">⚠ Educational/Research Prototype Only — NOT for clinical diagnosis or treatment decisions</div>
+
+    <!-- Team Photo Section -->
+    <div class="hero-team fade-in">
+      <div class="team-frame">
+        <div class="team-glass"></div>
+        <img src="./assets/team_photo.png" alt="LeukoQ Research Team" onerror="this.src='https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=800'"/>
+        <div class="team-label">
+          <span class="badge-dot" style="background:var(--green)"></span>
+          LeukoQ Research Group
+        </div>
+      </div>
+    </div>
   </div>
+  <div class="disclaimer">⚠ Educational/Research Prototype Only — NOT for clinical diagnosis or treatment decisions</div>
 </header>
+
+<!-- ══ IMAGE BREAK: QUANTUM BIO CORE ══════════════════════════════════════ -->
+<div class="image-break">
+  <div class="glow-aura aura-purple"></div>
+  <div class="image-break-content">
+    <img src="./assets/hero_3d.png" alt="Quantum Bio Core" class="img-3d" style="animation: floating 6s ease-in-out infinite"/>
+    <p class="muted" style="margin-top:20px;letter-spacing:1px">S Y N E R G Y : Q U A N T U M + B I O</p>
+  </div>
+</div>
 
 <!-- ══ HOW TO USE ═════════════════════════════════════════════════════════ -->
 <section class="section section-alt" id="how-to-use">
@@ -94,7 +152,7 @@
         <p style="color:var(--text2);font-size:.86rem;margin-bottom:12px">
           The system generates a risk score (LOW / MODERATE / HIGH / CRITICAL), flags which values are abnormal, shows how many blast cells were detected, and explains which genes are most important — in plain English.
         </p>
-        <div style="background:rgba(255,55,95,.08);border-rounded:10px;border-radius:10px;padding:10px 14px;font-size:.78rem;color:var(--text2)">
+        <div style="background:rgba(255,55,95,.08);border-radius:10px;padding:10px 14px;font-size:.78rem;color:var(--text2)">
           ⚠ <strong>Important:</strong> Always consult a licensed hematologist. This is a research tool, not a diagnosis.
         </div>
       </div>
@@ -146,8 +204,18 @@
   </div>
 </section>
 
+<!-- ══ IMAGE BREAK: VASCULAR FLOW ════════════════════════════════════════ -->
+<div class="image-break">
+  <div class="glow-aura aura-blue"></div>
+  <div class="image-break-content">
+    <img src="./assets/vessels_3d.png" alt="Blood Vessels" class="img-3d" style="animation: floating 8s ease-in-out 1s infinite"/>
+    <p class="muted" style="margin-top:20px;letter-spacing:1px">B I O M A R K E R : D E T E C T I O N</p>
+  </div>
+</div>
+
 <!-- ══ CBC PATIENT SCREENING ══════════════════════════════════════════════ -->
 <section class="section" id="screening">
+
   <div class="container">
     <div class="section-header">
       <div class="section-badge">🩸 Step 1</div>
@@ -322,8 +390,18 @@
   </div>
 </section>
 
+<!-- ══ IMAGE BREAK: BLOCH SPHERE ════════════════════════════════════════ -->
+<div class="image-break">
+  <div class="glow-aura aura-purple"></div>
+  <div class="image-break-content">
+    <div class="bloch-container" id="bloch-visualizer"></div>
+    <p class="muted" style="margin-top:20px;letter-spacing:1px">Q U B I T : S T A T E : V E C T O R</p>
+  </div>
+</div>
+
 <!-- ══ PLAIN ENGLISH EXPLANATIONS ════════════════════════════════════════ -->
-<section class="section" id="explanations">
+<section class="section section-alt" id="explanations">
+
   <div class="container">
     <div class="section-header">
       <div class="section-badge">📖 Plain English</div>
@@ -342,6 +420,32 @@
           The word "variational" means the circuit has adjustable knobs — it trains itself by fine-tuning those knobs until it gets the right answer.
         </p>
         <div class="ec-analogy">🎛️ Analogy: Like a lock combination — the quantum circuit tries different combinations until it perfectly separates the two types of leukemia.</div>
+        
+        <!-- Smart Visual: ZZFeatureMap SVG -->
+        <div style="margin-top:16px;background:rgba(255,255,255,0.02);padding:14px;border-radius:12px;border:1px solid var(--border)">
+          <div style="font-size:.7rem;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Circuit: ZZFeatureMap (4-Qubits)</div>
+          <svg class="circuit-svg" viewBox="0 0 400 120">
+            <!-- Qubit Lines -->
+            <line class="qubit-line" x1="20" y1="20" x2="380" y2="20" />
+            <line class="qubit-line" x1="20" y1="50" x2="380" y2="50" />
+            <line class="qubit-line" x1="20" y1="80" x2="380" y2="80" />
+            <line class="qubit-line" x1="20" y1="110" x2="380" y2="110" />
+            <!-- Gates (H) -->
+            <rect class="gate-h" x="50" y="10" width="20" height="20" rx="3" /> <text class="gate-label" x="60" y="21">H</text>
+            <rect class="gate-h" x="50" y="40" width="20" height="20" rx="3" /> <text class="gate-label" x="60" y="51">H</text>
+            <!-- Gates (RZ) -->
+            <rect class="gate-rz" x="90" y="10" width="30" height="20" rx="3" /> <text class="gate-label" x="105" y="21">Rz(x)</text>
+            <rect class="gate-rz" x="90" y="40" width="30" height="20" rx="3" /> <text class="gate-label" x="105" y="51">Rz(x)</text>
+            <!-- Gates (ZZ Entangler) -->
+            <line class="qubit-line" style="stroke:var(--pink);stroke-dasharray:3" x1="160" y1="20" x2="160" y2="50" />
+            <circle cx="160" cy="20" r="3" fill="var(--pink)" />
+            <circle cx="160" cy="50" r="3" fill="var(--pink)" />
+            <rect class="gate-zz" x="145" y="30" width="30" height="10" rx="2" /> <text class="gate-label" style="font-size:7px" x="160" y="36">ZZ(x,y)</text>
+            <!-- more bits -->
+            <text x="350" y="21" fill="var(--text3)" font-size="8">...</text>
+          </svg>
+        </div>
+
         <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">
           <span class="tag tag-purple">4 Qubits</span>
           <span class="tag tag-blue">ZZFeatureMap</span>
@@ -403,17 +507,17 @@
       <!-- Why quantum -->
       <div class="explain-card fade-in" style="--c1:#bf5af2;--c2:#ff375f">
         <div class="ec-icon">🚀</div>
-        <div class="ec-subtitle">Why This Matters</div>
-        <div class="ec-title">Why Quantum ML for Cancer?</div>
+        <div class="ec-subtitle">The Quantum Edge</div>
+        <div class="ec-title">High-Dimensional Mapping</div>
         <p class="ec-plain">
-          Leukemia has 7,129 genetic features — a giant pattern space. Classical computers search this space sequentially. Quantum computers explore it simultaneously using superposition (being in multiple states at once), potentially finding cancer signatures that classical AI misses.
-          We're currently in the <strong>NISQ era</strong> (Noisy Intermediate-Scale Quantum) — quantum models are close, but classical still wins on small datasets.
+          Leukemia data has <strong>7,129 genetic features</strong>. Classical AI struggles to find complex patterns in such a massive space. Quantum ML uses <em>Hilbert Space</em>—a mathematical dimension much larger than normal space—to map these 7,129 variables into just 4-8 qubits.
+          This allows the model to spot hidden "geometric shapes" in your DNA that classical computers simply cannot see.
         </p>
-        <div class="ec-analogy">🌊 Analogy: Classical = searching a library one book at a time. Quantum = reading every book simultaneously.</div>
+        <div class="ec-analogy">🧬 Fact: We map gene values to "angles" on a Bloch Sphere. These angles create a unique quantum signature for each patient.</div>
         <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">
-          <span class="tag tag-purple">Superposition</span>
-          <span class="tag tag-pink">Entanglement</span>
-          <span class="tag tag-purple">NISQ Era</span>
+          <span class="tag tag-purple">Hilbert Space</span>
+          <span class="tag tag-pink">DNA Mapping</span>
+          <span class="tag tag-purple">Bloch Sphere</span>
         </div>
       </div>
 
@@ -659,6 +763,39 @@
   </div>
 </section>
 
+<!-- ══ SHAP EXPLAINABILITY ════════════════════════════════════════════════ -->
+<section class="section" id="explainability">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-badge">🔍 Gene AI</div>
+      <h2>Which Genes Triggered the Alert?</h2>
+      <p>Using SHAP (SHapley Additive exPlanations) to see inside the "Black Box" of the models</p>
+    </div>
+    
+    <div class="glass-card fade-in" style="margin-top:24px;display:flex;gap:32px;align-items:center;flex-wrap:wrap">
+      <div style="flex:1.2;min-width:320px">
+        <div style="position:relative">
+          <img src="./assets/shap_bar.png" alt="SHAP gene importance" class="chart-img" style="border-radius:12px;box-shadow:0 0 40px rgba(191,90,242,0.1)"/>
+          <!-- Smart Tooltip Overlays -->
+          <div class="smart-tag" style="top:15%;left:82%">Zyxin (High AML)</div>
+          <div class="smart-tag" style="top:25%;left:75%">CST3 (Key Marker)</div>
+        </div>
+      </div>
+      <div style="flex:1;min-width:320px">
+        <h3 style="font-size:1.1rem;margin-bottom:12px">Smart Insight: Why These Genes?</h3>
+        <p class="muted" style="line-height:1.8;margin-bottom:16px">
+          The AI identified **Zyxin** and **CST3** as the most "informative" genes for distinguishing leukemia subtypes. 
+          In AML patients, these genes are often over-expressed. The Quantum model projects these specific genetic triggers into a multidimensional "Hilbert Space" where they become clearly separable from healthy signatures.
+        </p>
+        <div class="glass-card" style="padding:16px;background:rgba(10,132,255,0.05);border-color:rgba(10,132,255,0.2)">
+          <div style="font-size:.75rem;font-weight:700;color:var(--blue);text-transform:uppercase;margin-bottom:4px">Quantum Advantage</div>
+          <div style="font-size:.82rem">Focusing on high-dimensional *interference* patterns between these gene expressions allows QML models to spot leukemia signatures that classical models might miss in noisy datasets.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ══ DATASETS ═══════════════════════════════════════════════════════════ -->
 <section class="section" id="datasets">
   <div class="container">
@@ -780,7 +917,7 @@
   <div class="container">
     <div class="footer-grid">
       <div>
-        <div class="footer-logo">⚛️ QML Cancer Detect v2</div>
+        <div class="footer-logo">⚛️ LeukoQ Platform</div>
         <p class="footer-desc">Open-source quantum machine learning research for early blood cancer detection. All data public, all code on GitHub.</p>
         <p class="footer-warning">NOT a medical device. Research / Education only.</p>
       </div>

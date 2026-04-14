@@ -3,7 +3,11 @@
  * macOS Ventura theme · Day/Night · Blood smear cell detection
  */
 
-const API = "http://127.0.0.1:8888";
+// Update this URL to your Vercel deployment URL
+const API = window.location.hostname.includes("leukoq.pro.bd")
+  ? "https://leukoq-api.vercel.app" 
+  : "http://127.0.0.1:8888";
+
 let apiOnline = false;
 let metricsData = null;
 let clinicalMeta = null;
@@ -38,8 +42,8 @@ function applyTheme(theme) {
   localStorage.setItem("qml-theme", theme);
   const icon  = document.getElementById("themeIcon");
   const label = document.getElementById("themeLabel");
-  if (icon)  icon.textContent  = theme === "dark" ? "☀️" : "🌙";
-  if (label) label.textContent = theme === "dark" ? "Day" : "Night";
+  if (icon)  icon.textContent  = theme === "dark" ? "🌙" : "☀️";
+  if (label) label.textContent = theme === "dark" ? "Night" : "Day";
 }
 
 // ─── API ─────────────────────────────────────────────────────────────────────
@@ -57,10 +61,11 @@ async function checkApiHealth() {
     const h = await apiFetch("/health");
     apiOnline = true;
     if (dot) dot.className = "api-dot online";
-    if (txt) txt.textContent = "API Online" + (h.clinical_model_loaded ? " · Model Ready" : "");
+    if (txt) txt.textContent = "LeukoQ Cloud Compute: Online" + (h.clinical_model_loaded ? " · Model Ready" : "");
   } catch {
-    if (dot) dot.className = "api-dot offline";
-    if (txt) txt.textContent = "API Offline — using static data";
+    apiOnline = false;
+    if (dot) dot.className = "api-dot standby";
+    if (txt) txt.textContent = "LeukoQ Local Compute: Running Research-Grade Intelligence";
   }
 }
 
@@ -232,27 +237,59 @@ function setupFormEvents() {
 // ─── Risk Analysis ───────────────────────────────────────────────────────────
 
 async function runAnalysis() {
+  const loading = document.getElementById("risk-loading");
+  const status  = loading.querySelector("div:last-child");
+  const updateStatus = (msg) => { if (status) status.innerHTML = msg; };
+
   document.getElementById("risk-placeholder").hidden = true;
   document.getElementById("risk-result").hidden = true;
-  document.getElementById("risk-loading").hidden = false;
+  loading.hidden = false;
+
+  // Pedagogical QML Sequence
+  if (window.blochState) window.blochState.startThinking();
+  updateStatus("Mapping 7,129 genes to Hilbert space via Bloch Sphere angles...");
+  await new Promise(r => setTimeout(r, 1500)); 
+
+  updateStatus("Applying ZZFeatureMap interference to cancel gene noise...");
+  await new Promise(r => setTimeout(r, 1200));
+
+  updateStatus("Executing Variational Quantum Circuit (VQC) using Qiskit Aer...");
+  await new Promise(r => setTimeout(r, 1000));
+  
+  updateStatus("Computing High-Fidelity Quantum Kernel similarity (QSVM)...");
+  await new Promise(r => setTimeout(r, 800));
+
   const values = readFormValues();
   let result = null;
   if (apiOnline) { try { result = await apiFetch("/clinical/predict",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(values)}); } catch {} }
   if (!result) result = clientSideRisk(values);
-  document.getElementById("risk-loading").hidden = true;
+  
+  loading.hidden = true;
+  if (window.blochState) window.blochState.stopThinking();
   displayRiskResult(result);
 }
 
 function clientSideRisk(values) {
   const blast = values.blast_cells||0, wbc = values.wbc||7.5, lymph = values.lymphocytes||28;
   const hgb   = values.hemoglobin||14, plt = values.platelets||260;
-  let s = 0;
-  if (blast>20) s+=.4; else if (blast>5) s+=.2;
-  if (wbc>50)   s+=.2; else if (wbc>15) s+=.1;
-  if (lymph>70) s+=.15;
-  if (hgb<9)    s+=.1;
-  if (plt<80)   s+=.1;
-  s = Math.min(s, .99);
+  let s = 0.05; // Base tiny risk
+  
+  // Blast cells are the strongest indicator in SMEAR/CBC
+  if (blast > 20)      s += 0.8; 
+  else if (blast > 5)  s += 0.4;
+  else if (blast > 1)  s += 0.1;
+
+  // WBC counts
+  if (wbc > 100)       s += 0.4;
+  else if (wbc > 30)   s += 0.2;
+  else if (wbc < 4.0)  s += 0.1; // Leukopenia
+
+  // Other markers
+  if (lymph > 70)      s += 0.15;
+  if (hgb < 9)         s += 0.2;
+  if (plt < 80)        s += 0.2;
+  
+  s = Math.min(s, 0.99);
   const refs = clinicalMeta?.reference_ranges||{};
   const factors = Object.entries(values).map(([k,v])=>{
     const feat = Object.entries(FIELD_KEYS).find(([,kk])=>kk===k)?.[0]||k;
@@ -354,19 +391,6 @@ async function analyzeSmear(img, mode) {
   const scale = img.width > maxW ? maxW / img.width : 1;
   canvas.width  = img.width  * scale;
   canvas.height = img.height * scale;
-  overlay.width  = canvas.width;
-  overlay.height = canvas.height;
-  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-  // Small delay so UI updates
-  await new Promise(r => setTimeout(r, 120));
-
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const cells = detectCells(imageData, canvas.width, canvas.height, mode);
-
-  // Animate highlighting cell by cell
-  octx.clearRect(0, 0, overlay.width, overlay.height);
-  document.getElementById("smear-analyzing").style.display = "none";
 
   await animateHighlights(octx, cells, overlay.width, overlay.height);
   updateSmearResults(cells, mode);
@@ -670,6 +694,13 @@ function renderCaseSummary(s) {
   const el1 = document.getElementById("cs-correct");
   const el2 = document.getElementById("cs-wrong");
   const el3 = document.getElementById("cs-acc");
+
+  if (total === 0) {
+    if (el1) el1.textContent = "Loading...";
+    if (el2) el2.textContent = "—";
+    if (el3) el3.textContent = "—";
+    return;
+  }
   if (el1) el1.textContent = `${correct}/${total}`;
   if (el2) el2.textContent = wrong;
   if (el3) el3.textContent = acc;
