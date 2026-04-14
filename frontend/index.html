@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  <link rel="canonical" href="https://leukoq.pro.bd/" />
   <title>LeukoQ | Quantum Blood Cancer Detection</title>
   <meta name="description" content="LeukoQ: Early-stage leukemia detection via Quantum Machine Learning — Qiskit VQC, QSVM, PennyLane QNN. End-to-end oncology research platform."/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -194,14 +196,15 @@
   </div>
 </section>
 
-<!-- ══ IMAGE BREAK: VASCULAR FLOW ════════════════════════════════════════ -->
-<div class="image-break">
-  <div class="glow-aura aura-blue"></div>
-  <div class="image-break-content">
-    <img src="./assets/vessels_3d.png" alt="Blood Vessels" class="img-3d" style="animation: floating 8s ease-in-out 1s infinite"/>
-    <p class="muted" style="margin-top:20px;letter-spacing:1px">B I O M A R K E R : D E T E C T I O N</p>
-  </div>
-</div>
+<!-- ══ ARTICLE FIGURE 1: GENETIC CORE ══════════════════════════════════════ -->
+<figure class="article-banner fade-in">
+  <img src="./assets/dna_quantum_banner.png" alt="Quantum Genetic Core" class="banner-img" loading="lazy"/>
+  <figcaption class="banner-caption">
+    <div class="caption-tag">Research Visualization</div>
+    <h3>QML Hybrid Genetic Fabric</h3>
+    <p>Mapping 7,129 leukemia-relevant gene expression vectors into a 2048-dimensional Hilbert space for maximum feature separation.</p>
+  </figcaption>
+</figure>
 
 <!-- ══ CBC PATIENT SCREENING ══════════════════════════════════════════════ -->
 <section class="section" id="screening">
@@ -380,14 +383,15 @@
   </div>
 </section>
 
-<!-- ══ IMAGE BREAK: BLOCH SPHERE ════════════════════════════════════════ -->
-<div class="image-break">
-  <div class="glow-aura aura-purple"></div>
-  <div class="image-break-content">
-    <div class="bloch-container" id="bloch-visualizer"></div>
-    <p class="muted" style="margin-top:20px;letter-spacing:1px">Q U B I T : S T A T E : V E C T O R</p>
-  </div>
-</div>
+<!-- ══ ARTICLE FIGURE 2: VASCULAR HILBERT MAPPING ════════════════════════ -->
+<figure class="article-banner fade-in">
+  <img src="./assets/vessels_banner.png" alt="Vascular Probability Mapping" class="banner-img" loading="lazy"/>
+  <figcaption class="banner-caption">
+    <div class="caption-tag">Clinical Intelligence</div>
+    <h3>Hilbert Probability Mapping</h3>
+    <p>Visualizing the synthetic blood flow signature of a leukemic patient where quantum interference patterns highlight irregular blast cell clusters.</p>
+  </figcaption>
+</figure>
 
 <!-- ══ PLAIN ENGLISH EXPLANATIONS ════════════════════════════════════════ -->
 <section class="section section-alt" id="explanations">
@@ -750,41 +754,29 @@
         <div id="pl-metrics" class="inline-metrics"></div>
       </div>
     </div>
+
+    <!-- Live Qubit Visualizer -->
+    <div class="glass-card fade-in" style="margin-top: 24px; text-align: center; padding: 40px;">
+      <div class="section-badge" style="margin-bottom: 20px;">Live Visualization</div>
+      <h3 style="margin-bottom: 10px;">Quantum State Vector (Bloch Sphere)</h3>
+      <p class="muted" style="margin-bottom: 30px;">Real-time 3D visualization of a single qubit's state durante training interference.</p>
+      <div class="bloch-container" id="bloch-visualizer" style="margin: 0 auto; width: 300px; height: 300px; cursor: move;"></div>
+      <div style="margin-top: 20px; font-size: 0.8rem; color: var(--text3);">
+        Interacting with the sphere represents the multi-dimensional mapping of 7,129 genes into quantum Hilbert space.
+      </div>
+    </div>
   </div>
 </section>
 
-<!-- ══ SHAP EXPLAINABILITY ════════════════════════════════════════════════ -->
-<section class="section" id="explainability">
-  <div class="container">
-    <div class="section-header">
-      <div class="section-badge">🔍 Gene AI</div>
-      <h2>Which Genes Triggered the Alert?</h2>
-      <p>Using SHAP (SHapley Additive exPlanations) to see inside the "Black Box" of the models</p>
-    </div>
-    
-    <div class="glass-card fade-in" style="margin-top:24px;display:flex;gap:32px;align-items:center;flex-wrap:wrap">
-      <div style="flex:1.2;min-width:320px">
-        <div style="position:relative">
-          <img src="./assets/shap_bar.png" alt="SHAP gene importance" class="chart-img" style="border-radius:12px;box-shadow:0 0 40px rgba(191,90,242,0.1)"/>
-          <!-- Smart Tooltip Overlays -->
-          <div class="smart-tag" style="top:15%;left:82%">Zyxin (High AML)</div>
-          <div class="smart-tag" style="top:25%;left:75%">CST3 (Key Marker)</div>
-        </div>
-      </div>
-      <div style="flex:1;min-width:320px">
-        <h3 style="font-size:1.1rem;margin-bottom:12px">Smart Insight: Why These Genes?</h3>
-        <p class="muted" style="line-height:1.8;margin-bottom:16px">
-          The AI identified **Zyxin** and **CST3** as the most "informative" genes for distinguishing leukemia subtypes. 
-          In AML patients, these genes are often over-expressed. The Quantum model projects these specific genetic triggers into a multidimensional "Hilbert Space" where they become clearly separable from healthy signatures.
-        </p>
-        <div class="glass-card" style="padding:16px;background:rgba(10,132,255,0.05);border-color:rgba(10,132,255,0.2)">
-          <div style="font-size:.75rem;font-weight:700;color:var(--blue);text-transform:uppercase;margin-bottom:4px">Quantum Advantage</div>
-          <div style="font-size:.82rem">Focusing on high-dimensional *interference* patterns between these gene expressions allows QML models to spot leukemia signatures that classical models might miss in noisy datasets.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+<!-- ══ ARTICLE FIGURE 3: AI MICROSCOPY ═══════════════════════════════════ -->
+<figure class="article-banner fade-in" style="margin-bottom: 100px;">
+  <img src="./assets/microscopy_banner.png" alt="Automated Microscopy AI" class="banner-img" loading="lazy"/>
+  <figcaption class="banner-caption">
+    <div class="caption-tag">Microscopy Insight</div>
+    <h3>Morphological AI Highlight (V2)</h3>
+    <p>Real-time cell detection using a deep learning backbone trained on 17,000+ MedMNIST samples, identifying ALL vs AML blast precursors.</p>
+  </figcaption>
+</figure>
 
 <!-- ══ DATASETS ═══════════════════════════════════════════════════════════ -->
 <section class="section" id="datasets">
