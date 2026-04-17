@@ -20,7 +20,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   initTheme();
   initParticleCanvas();
   initScrollAnimations();
-  initApiLinks();
   await checkApiHealth();
   await Promise.all([loadMetrics(), loadClinicalMeta(), loadShapData(), loadPatientCases()]);
   setupFormEvents();
@@ -45,19 +44,6 @@ function applyTheme(theme) {
   const label = document.getElementById("themeLabel");
   if (icon)  icon.textContent  = theme === "dark" ? "🌙" : "☀️";
   if (label) label.textContent = theme === "dark" ? "Night" : "Day";
-}
-
-// ─── External Links ──────────────────────────────────────────────────────────
-
-function initApiLinks() {
-  const isProd = window.location.hostname.includes("leukoq.pro.bd");
-  const docsUrl = isProd ? "https://leukoq-api.vercel.app/docs" : "http://127.0.0.1:8888/docs";
-  
-  const barLink = document.getElementById("api-docs-link-bar");
-  const footerLink = document.getElementById("api-docs-link-footer");
-  
-  if (barLink) barLink.href = docsUrl;
-  if (footerLink) footerLink.href = docsUrl;
 }
 
 // ─── API ─────────────────────────────────────────────────────────────────────
