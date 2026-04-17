@@ -414,6 +414,18 @@ ul{list-style:none}
   color: #fff; font-size: 0.8rem; font-weight: 700;
   display: flex; align-items: center; gap: 8px;
   border: 1px solid rgba(255,255,255,0.1); z-index: 2;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.team-label:hover {
+  background: rgba(20,184,166,0.8);
+  border-color: var(--teal-light);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(20,184,166,0.3);
+  text-decoration: none;
+}
+.school-logo-mini {
+  width: 24px; height: 24px; border-radius: 50%;
+  object-fit: cover; border: 1.5px solid rgba(255,255,255,0.4);
 }
 
 @keyframes floatTeam { 
