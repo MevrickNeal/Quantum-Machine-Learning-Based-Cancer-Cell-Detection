@@ -390,9 +390,23 @@ async function analyzeSmear(img, mode) {
   const scale = img.width > maxW ? maxW / img.width : 1;
   canvas.width  = img.width  * scale;
   canvas.height = img.height * scale;
+  overlay.width  = canvas.width;
+  overlay.height = canvas.height;
 
+  // Draw image
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+  // DETECT CELLS
+  const cells = detectCells(imageData, canvas.width, canvas.height, mode);
+
+  // ANIMATE
   await animateHighlights(octx, cells, overlay.width, overlay.height);
   updateSmearResults(cells, mode);
+
+  // HIDE OVERLAY - QUANTUM DONE
+  document.getElementById("smear-analyzing").style.display = "none";
+  console.log("Quantum Analysis Complete:", cells.length, "cells found");
 }
 
 // ─── Cell detection ──────────────────────────────────────────────────────────
