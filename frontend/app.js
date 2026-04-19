@@ -42,7 +42,7 @@ function applyTheme(theme) {
   localStorage.setItem("qml-theme", theme);
   const icon  = document.getElementById("themeIcon");
   const label = document.getElementById("themeLabel");
-  if (icon)  icon.textContent  = theme === "dark" ? "ðŸŒ™" : "â˜€ï¸";
+  if (icon)  icon.textContent  = theme === "dark" ? "🌙" : "☀️";
   if (label) label.textContent = theme === "dark" ? "Night" : "Day";
 }
 
