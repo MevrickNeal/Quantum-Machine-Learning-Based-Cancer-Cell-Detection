@@ -400,7 +400,7 @@ async function analyzeSmear(img, mode) {
 function detectCells(imageData, width, height, mode) {
   const data = imageData.data;
   const cells = [];
-  const step  = 22; // grid step
+  const step  = 28; // grid step
   const minR  =  8; // min cell radius
   const visited = new Set();
 
@@ -511,7 +511,7 @@ async function animateHighlights(octx, cells, width, height) {
     }
 
     // Every 8 cells, wait a frame to animate
-    if (i % 8 === 0) await new Promise(r => requestAnimationFrame(r));
+    if (i % 30 === 0) await new Promise(r => requestAnimationFrame(r));
   }
 
   // Pulsing loop for blast cells
