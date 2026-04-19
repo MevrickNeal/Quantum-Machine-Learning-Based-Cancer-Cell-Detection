@@ -411,18 +411,6 @@ ul{list-style:none}
   color: #fff; font-size: 0.8rem; font-weight: 700;
   display: flex; align-items: center; gap: 8px;
   border: 1px solid rgba(255,255,255,0.1); z-index: 2;
-  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-}
-.team-label:hover {
-  background: rgba(20,184,166,0.8);
-  border-color: var(--teal-light);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(20,184,166,0.3);
-  text-decoration: none;
-}
-.school-logo-mini {
-  width: 24px; height: 24px; border-radius: 50%;
-  object-fit: cover; border: 1.5px solid rgba(255,255,255,0.4);
 }
 
 @keyframes floatTeam { 
@@ -925,8 +913,6 @@ ul{list-style:none}
 .about-image-wrap img { width: 100%; display: block; filter: saturate(1.1); }
 
 .credit-badge {
-  text-decoration: none;
-  transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1093,6 +1079,3 @@ ul{list-style:none}
   display: inline-block; padding: 2px 8px; background: rgba(20, 184, 166, 0.1); 
   color: var(--teal-dark); border-radius: 4px; font-size: 0.75rem; margin-top: 6px; font-weight: 700;
 }
-
-.credit-badge:hover { background: rgba(20,184,166,0.1); border-color: var(--teal-light); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(20,184,166,0.2); }
-/* last-sync: 2026-04-19 14:21:28.570132 */
