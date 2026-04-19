@@ -1,6 +1,6 @@
-/**
- * Quantum Blood Cancer Detection — Frontend v2
- * macOS Ventura theme · Day/Night · Blood smear cell detection
+﻿/**
+ * Quantum Blood Cancer Detection â€” Frontend v2
+ * macOS Ventura theme Â· Day/Night Â· Blood smear cell detection
  */
 
 // Update this URL to your Vercel deployment URL
@@ -14,7 +14,7 @@ let clinicalMeta = null;
 let patientCases = [];
 let shownCaseCount = 18;
 
-// ─── Init ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 document.addEventListener("DOMContentLoaded", async () => {
   initTheme();
@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   initSmearAnalysis();
 });
 
-// ─── Theme (Day / Night) ─────────────────────────────────────────────────────
+// â”€â”€â”€ Theme (Day / Night) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function initTheme() {
   const saved = localStorage.getItem("qml-theme") || "dark";
@@ -42,11 +42,11 @@ function applyTheme(theme) {
   localStorage.setItem("qml-theme", theme);
   const icon  = document.getElementById("themeIcon");
   const label = document.getElementById("themeLabel");
-  if (icon)  icon.textContent  = theme === "dark" ? "🌙" : "☀️";
+  if (icon)  icon.textContent  = theme === "dark" ? "ðŸŒ™" : "â˜€ï¸";
   if (label) label.textContent = theme === "dark" ? "Night" : "Day";
 }
 
-// ─── API ───────────────────────────────────────────────────────────
+// â”€â”€â”€ API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function apiFetch(path, opts = {}) {
   const res = await fetch(`${API}${path}`, { ...opts, signal: AbortSignal.timeout(7000) });
@@ -61,7 +61,7 @@ async function checkApiHealth() {
     const h = await apiFetch("/health");
     apiOnline = true;
     if (dot) dot.className = "api-dot online";
-    if (txt) txt.textContent = "LeukoQ Cloud Compute: Online" + (h.clinical_model_loaded ? " · Model Ready" : "");
+    if (txt) txt.textContent = "LeukoQ Cloud Compute: Online" + (h.clinical_model_loaded ? " Â· Model Ready" : "");
   } catch {
     apiOnline = false;
     if (dot) dot.className = "api-dot standby";
@@ -69,7 +69,7 @@ async function checkApiHealth() {
   }
 }
 
-// ─── Metrics ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Metrics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function loadMetrics() {
   let data = null;
@@ -93,7 +93,7 @@ function populateKpis(data) {
   let bestAuc = 0;
   Object.values(allM).forEach(m => { if ((m.roc_auc||0) > bestAuc) bestAuc = m.roc_auc; });
   const el = document.getElementById("kpi-best-auc");
-  if (el) el.textContent = bestAuc > 0 ? bestAuc.toFixed(3) : "—";
+  if (el) el.textContent = bestAuc > 0 ? bestAuc.toFixed(3) : "â€”";
 }
 
 function populateComparisonTable(data) {
@@ -114,8 +114,8 @@ function populateComparisonTable(data) {
   tbody.innerHTML = rows.map(({name,m,type}) => {
     const tc = type.startsWith("Q") ? "model-type-quantum" : "model-type-classical";
     const f = (v,k) => {
-      const s = typeof v==="number" ? v.toFixed(4) : "—";
-      return typeof v==="number" && Math.abs(v - bestVals[k]) < .0001 ? `<span class="best-cell">${s} ✓</span>` : s;
+      const s = typeof v==="number" ? v.toFixed(4) : "â€”";
+      return typeof v==="number" && Math.abs(v - bestVals[k]) < .0001 ? `<span class="best-cell">${s} âœ“</span>` : s;
     };
     return `<tr><td><strong>${name}</strong></td><td><span class="${tc}">${type}</span></td><td>${f(m.accuracy,"accuracy")}</td><td>${f(m.precision,"precision")}</td><td>${f(m.recall,"recall")}</td><td>${f(m.f1,"f1")}</td><td>${f(m.roc_auc,"roc_auc")}</td></tr>`;
   }).join("");
@@ -135,13 +135,13 @@ function populateQuantumMetrics(data) {
   const names = ["Logistic Regression"];
   Object.entries(qQ).filter(([,r])=>r?.status==="ok").forEach(([n])=>names.push(n));
   cmGrid.innerHTML = names.map(n=>{
-    const safe = n.toLowerCase().replace(/[�--ff]/g,c=>c===" ?"?"_":"");
+    const safe = n.toLowerCase().replace(/[ï¿½--ff]/g,c=>c===" ?"?"_":"");
     const src  = `./assets/cm_${safe}.png`;
     return `<div class="glass-card cm-card"><h4>${n}</h4><img src="${src}" alt="CM ${n}" class="chart-img" onerror="this.style.display='none'"/></div>`;
   }).join("");
 }
 
-// ─── SHAP ───────────────────────────────────────────────────────────
+// â”€â”€â”€ SHAP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function loadShapData() {
   let shap = null;
@@ -154,22 +154,22 @@ async function loadShapData() {
   c.innerHTML = sorted.map(([g,v])=>`<div class="shap-gene-row"><span class="shap-gene-name">${g}</span><div class="shap-bar-wrap"><div class="shap-bar-fill" style="width:${(v/maxV*100).toFixed(1)}%"></div></div><span class="shap-gene-val">${v.toFixed(4)}</span></div>`).join("");
 }
 
-// ─── Clinical Meta + Form ─────────────────────────────────────────────────────
+// â”€â”€â”€ Clinical Meta + Form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function loadClinicalMeta() {
   if (apiOnline) { try { clinicalMeta = await apiFetch("/clinical/meta"); } catch {} }
   if (!clinicalMeta) {
     clinicalMeta = {
-      feature_names:["WBC (K/µL)","RBC (M/µL)","Hemoglobin (g/dL)","Hematocrit (%)","MCV (fL)","MCH (pg)","MCHC (g/dL)","Platelets (K/µL)","Neutrophils (%)","Lymphocytes (%)","Monocytes (%)","Eosinophils (%)","Basophils (%)","Blast Cells (%)"],
-      feature_ranges:{"WBC (K/µL)": [0.1,500],"RBC (M/µL)": [1,7],"Hemoglobin (g/dL)": [3,22],"Hematocrit (%)": [10,62],"MCV (fL)": [50,125],"MCH (pg)": [15,42],"MCHC (g/dL)": [20,40],"Platelets (K/µL)": [5,1000],"Neutrophils (%)": [0,95],"Lymphocytes (%)": [0,98],"Monocytes (%)": [0,30],"Eosinophils (%)": [0,20],"Basophils (%)": [0,5],"Blast Cells (%)": [0,99]},
-      normal_defaults:{"WBC (K/µL)":7.5,"RBC (M/µL)":4.8,"Hemoglobin (g/dL)":14,"Hematocrit (%)":42,"MCV (fL)":90,"MCH (pg)":30,"MCHC (g/dL)":34,"Platelets (K/µL)":260,"Neutrophils (%)":58,"Lymphocytes (%)":28,"Monocytes (%)":6,"Eosinophils (%)":3,"Basophils (%)":0.8,"Blast Cells (%)":0.3},
-      reference_ranges:{"WBC (K/µL)":{min:4.5,max:11},"RBC (M/µL)":{min:3.8,max:6},"Hemoglobin (g/dL)":{min:11.5,max:17.5},"Hematocrit (%)":{min:35,max:52},"MCV (fL)":{min:80,max:100},"MCH (pg)":{min:27,max:33},"MCHC (g/dL)":{min:32,max:36},"Platelets (K/µL)":{min:150,max:400},"Neutrophils (%)":{min:40,max:75},"Lymphocytes (%)":{min:20,max:40},"Monocytes (%)":{min:2,max:10},"Eosinophils (%)":{min:1,max:6},"Basophils (%)":{min:0,max:2},"Blast Cells (%)":{min:0,max:2}}
+      feature_names:["WBC (K/ÂµL)","RBC (M/ÂµL)","Hemoglobin (g/dL)","Hematocrit (%)","MCV (fL)","MCH (pg)","MCHC (g/dL)","Platelets (K/ÂµL)","Neutrophils (%)","Lymphocytes (%)","Monocytes (%)","Eosinophils (%)","Basophils (%)","Blast Cells (%)"],
+      feature_ranges:{"WBC (K/ÂµL)": [0.1,500],"RBC (M/ÂµL)": [1,7],"Hemoglobin (g/dL)": [3,22],"Hematocrit (%)": [10,62],"MCV (fL)": [50,125],"MCH (pg)": [15,42],"MCHC (g/dL)": [20,40],"Platelets (K/ÂµL)": [5,1000],"Neutrophils (%)": [0,95],"Lymphocytes (%)": [0,98],"Monocytes (%)": [0,30],"Eosinophils (%)": [0,20],"Basophils (%)": [0,5],"Blast Cells (%)": [0,99]},
+      normal_defaults:{"WBC (K/ÂµL)":7.5,"RBC (M/ÂµL)":4.8,"Hemoglobin (g/dL)":14,"Hematocrit (%)":42,"MCV (fL)":90,"MCH (pg)":30,"MCHC (g/dL)":34,"Platelets (K/ÂµL)":260,"Neutrophils (%)":58,"Lymphocytes (%)":28,"Monocytes (%)":6,"Eosinophils (%)":3,"Basophils (%)":0.8,"Blast Cells (%)":0.3},
+      reference_ranges:{"WBC (K/ÂµL)":{min:4.5,max:11},"RBC (M/ÂµL)":{min:3.8,max:6},"Hemoglobin (g/dL)":{min:11.5,max:17.5},"Hematocrit (%)":{min:35,max:52},"MCV (fL)":{min:80,max:100},"MCH (pg)":{min:27,max:33},"MCHC (g/dL)":{min:32,max:36},"Platelets (K/ÂµL)":{min:150,max:400},"Neutrophils (%)":{min:40,max:75},"Lymphocytes (%)":{min:20,max:40},"Monocytes (%)":{min:2,max:10},"Eosinophils (%)":{min:1,max:6},"Basophils (%)":{min:0,max:2},"Blast Cells (%)":{min:0,max:2}}
     };
   }
   buildScreeningForm();
 }
 
-const FIELD_KEYS = {"WBC (K/µL)":"wbc","RBC (M/µL)":"rbc","Hemoglobin (g/dL)":"hemoglobin","Hematocrit (%)":"hematocrit","MCV (fL)":"mcv","MCH (pg)":"mch","MCHC (g/dL)":"mchc","Platelets (K/µL)":"platelets","Neutrophils (%)":"neutrophils","Lymphocytes (%)":"lymphocytes","Monocytes (%)":"monocytes","Eosinophils (%)":"eosinophils","Basophils (%)":"basophils","Blast Cells (%)":"blast_cells"};
+const FIELD_KEYS = {"WBC (K/ÂµL)":"wbc","RBC (M/ÂµL)":"rbc","Hemoglobin (g/dL)":"hemoglobin","Hematocrit (%)":"hematocrit","MCV (fL)":"mcv","MCH (pg)":"mch","MCHC (g/dL)":"mchc","Platelets (K/ÂµL)":"platelets","Neutrophils (%)":"neutrophils","Lymphocytes (%)":"lymphocytes","Monocytes (%)":"monocytes","Eosinophils (%)":"eosinophils","Basophils (%)":"basophils","Blast Cells (%)":"blast_cells"};
 
 function buildScreeningForm() {
   const form = document.getElementById("screening-form"); if (!form||!clinicalMeta) return;
@@ -179,7 +179,7 @@ function buildScreeningForm() {
     const def = defs[feat]??((lo+hi)/2);
     const id  = "cbc_"+feat.replace(/[^a-z0-9]/gi,"_");
     const ref = refs[feat]||{};
-    const refStr = ref.min!==undefined ? `Normal: ${ref.min}–${ref.max}` : "";
+    const refStr = ref.min!==undefined ? `Normal: ${ref.min}â€“${ref.max}` : "";
     const step = (hi-lo)<=5?0.1:(hi-lo)<=50?0.5:1;
     return `<div class="cbc-row" title="${refStr}">
       <label for="${id}_range">${feat} <span class="cbc-ref">${refStr}</span></label>
@@ -217,7 +217,7 @@ function resetForm() {
 }
 
 function loadHighRiskDemo() {
-  const vals = {"WBC (K/µL)":120,"RBC (M/µL)":2.5,"Hemoglobin (g/dL)":7,"Hematocrit (%)":21,"MCV (fL)":85,"MCH (pg)":28,"MCHC (g/dL)":33,"Platelets (K/µL)":35,"Neutrophils (%)":8,"Lymphocytes (%)":85,"Monocytes (%)":4,"Eosinophils (%)":2,"Basophils (%)":1,"Blast Cells (%)":25};
+  const vals = {"WBC (K/ÂµL)":120,"RBC (M/ÂµL)":2.5,"Hemoglobin (g/dL)":7,"Hematocrit (%)":21,"MCV (fL)":85,"MCH (pg)":28,"MCHC (g/dL)":33,"Platelets (K/ÂµL)":35,"Neutrophils (%)":8,"Lymphocytes (%)":85,"Monocytes (%)":4,"Eosinophils (%)":2,"Basophils (%)":1,"Blast Cells (%)":25};
   document.getElementById("screening-form")?.querySelectorAll('input[type="range"]').forEach(el => {
     const feat = el.dataset.feature; if (feat && vals[feat]!==undefined) {
       const val = Math.min(parseFloat(el.max),Math.max(parseFloat(el.min),vals[feat]));
@@ -234,7 +234,7 @@ function setupFormEvents() {
   document.getElementById("btn-demo-high")?.addEventListener("click", loadHighRiskDemo);
 }
 
-// ─── Risk Analysis ────────────────────────────────────────────────────────
+// â”€â”€â”€ Risk Analysis â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function runAnalysis() {
   const loading = document.getElementById("risk-loading");
@@ -298,10 +298,10 @@ function clientSideRisk(values) {
     return {feature:feat, value:v, concern};
   }).sort((a,b)=>({HIGH:0,LOW:1,NORMAL:2}[a.concern]||2)-({HIGH:0,LOW:1,NORMAL:2}[b.concern]||2));
   let level,label,color;
-  if      (s<.25) { level="LOW";      label="Low Risk — Normal Blood Pattern"; color="var(--green)"; }
-  else if (s<.55) { level="MODERATE"; label="Moderate Risk — Further Evaluation Recommended"; color="var(--orange)"; }
-  else if (s<.80) { level="HIGH";     label="High Risk — Urgent Medical Consultation"; color="var(--orange)"; }
-  else            { level="CRITICAL"; label="Critical Risk — Immediate Hematologist Referral"; color="var(--pink)"; }
+  if      (s<.25) { level="LOW";      label="Low Risk â€” Normal Blood Pattern"; color="var(--green)"; }
+  else if (s<.55) { level="MODERATE"; label="Moderate Risk â€” Further Evaluation Recommended"; color="var(--orange)"; }
+  else if (s<.80) { level="HIGH";     label="High Risk â€” Urgent Medical Consultation"; color="var(--orange)"; }
+  else            { level="CRITICAL"; label="Critical Risk â€” Immediate Hematologist Referral"; color="var(--pink)"; }
   return {risk_score:s, risk_level:level, risk_label:label, risk_color:color, contributing_factors:factors};
 }
 
@@ -313,7 +313,7 @@ function displayRiskResult(r) {
   if (badge) { badge.textContent=r.risk_level; badge.style.background=`${r.risk_color}22`; badge.style.color=r.risk_color; badge.style.border=`1px solid ${r.risk_color}66`; }
   const lbl = document.getElementById("risk-label-text"); if (lbl) lbl.textContent = r.risk_label;
   const list = document.getElementById("factors-list"); if (!list) return;
-  list.innerHTML = (r.contributing_factors||[]).slice(0,12).map(f=>`<div class="factor-row"><span class="factor-name">${f.feature}</span><span class="factor-value">${typeof f.value==="number"?f.value.toFixed(1):"—"}</span><span class="factor-concern" style="color:${f.concern==="HIGH"?"var(--pink)":f.concern==="LOW"?"var(--orange)":"var(--green)"}">${f.concern}</span></div>`).join("");
+  list.innerHTML = (r.contributing_factors||[]).slice(0,12).map(f=>`<div class="factor-row"><span class="factor-name">${f.feature}</span><span class="factor-value">${typeof f.value==="number"?f.value.toFixed(1):"â€”"}</span><span class="factor-concern" style="color:${f.concern==="HIGH"?"var(--pink)":f.concern==="LOW"?"var(--orange)":"var(--green)"}">${f.concern}</span></div>`).join("");
 }
 
 function animGauge(score, color) {
@@ -332,9 +332,9 @@ function animGauge(score, color) {
   requestAnimationFrame(tick);
 }
 
-// ════════════════════════════════════════════════════════════════
-//  BLOOD SMEAR CELL DETECTION — FIXED
-// ════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  BLOOD SMEAR CELL DETECTION â€” FIXED
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 let smearAnalyzed = false;
 
@@ -368,8 +368,8 @@ function loadSampleImage(src, mode) {
   const img = new Image();
   img.crossOrigin = "anonymous";
   img.onload = () => analyzeSmear(img, mode);
-  img.onerror = () => { console.warn("Demo image not found — run train.py to generate it."); showSmearError(); };
-  img.src = src + "?t=" + Date.now();
+  img.onerror = () => { console.warn("Demo image not found â€” run train.py to generate it."); showSmearError(); };
+  img.src = src;
 }
 
 function showSmearError() {
@@ -425,7 +425,7 @@ async function analyzeSmear(img, mode) {
   smearAnalyzed = true;
 }
 
-// ─── Cell detection ───────────────────────────────────────────────────────
+// â”€â”€â”€ Cell detection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function detectCells(imageData, width, height, mode) {
   const data = imageData.data;
@@ -491,7 +491,7 @@ function classifyCell(r, g, b, samples) {
   return "rbc";
 }
 
-// ─── Animated highlights ─────────────────────────────────────────────────────
+// â”€â”€â”€ Animated highlights â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function animateHighlights(octx, cells, width, height) {
   if (!cells || cells.length === 0) return;
@@ -556,7 +556,7 @@ function pulseBlastCells(octx, blasts, colors, glow) {
   requestAnimationFrame(pulse);
 }
 
-// ─── Smear results panel ─────────────────────────────────────────────────────
+// â”€â”€â”€ Smear results panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function updateSmearResults(cells, mode) {
   const rbcCells   = cells.filter(c=>c.type==="rbc");
@@ -580,19 +580,20 @@ function updateSmearResults(cells, mode) {
   let level, msg, col;
   if (blastPct === 0 || mode === "normal") {
     level = "Normal Pattern"; col = "var(--green)";
-    msg = `✅ <strong>${total} cells detected.</strong> No blast cells found. WBC:RBC ratio looks normal. This smear appears consistent with a healthy blood sample. Always confirm with a hematologist.`;
+    msg = `âœ… <strong>${total} cells detected.</strong> No blast cells found. WBC:RBC ratio looks normal. This smear appears consistent with a healthy blood sample. Always confirm with a hematologist.`;
   } else if (blastPct < 5) {
     level = "Borderline"; col = "var(--orange)";
-    msg = `⚠ <strong>${blastCells.length} suspected blast cell(s) detected</strong> (${blastPct.toFixed(1)}% of sample). Blast cells <5% may be early-stage. Recommend a formal bone marrow biopsy for confirmation.`;
+    msg = `âš  <strong>${blastCells.length} suspected blast cell(s) detected</strong> (${blastPct.toFixed(1)}% of sample). Blast cells <5% may be early-stage. Recommend a formal bone marrow biopsy for confirmation.`;
   } else if (blastPct < 20) {
     level = "Elevated Risk"; col = "var(--orange)";
-    msg = `🚨 <strong>${blastCells.length} blast cells detected</strong> (${blastPct.toFixed(1)}%). Blast cells between 5-20% indicate possible early leukemia. This pattern is consistent with ALL or AML subtypes.`;
+    msg = `ðŸš¨ <strong>${blastCells.length} blast cells detected</strong> (${blastPct.toFixed(1)}%). Blast cells between 5-20% indicate possible early leukemia. This pattern is consistent with ALL or AML subtypes.`;
   } else {
     level = "HIGH RISK"; col = "var(--pink)";
-    msg = `🔴 <strong>CRITICAL: ${blastCells.length} blast cells detected</strong> (${blastPct.toFixed(1)}%). Blast percentage >20% meets WHO diagnostic criteria for Acute Leukemia. Immediate specialist referral recommended.`;
+    msg = `ðŸ”´ <strong>CRITICAL: ${blastCells.length} blast cells detected</strong> (${blastPct.toFixed(1)}%). Blast percentage >20% meets WHO diagnostic criteria for Acute Leukemia. Immediate specialist referral recommended.`;
   }
 
   sum.style.background    = `${col}11`;
   sum.style.borderColor   = `${col}33`;
   sum.innerHTML = `<div style="color:${col};font-weight:700;font-size:.85rem;margin-bottom:8px">${level}</div><div style="font-size:.83rem;color:var(--text2);line-height:1.7">${msg}</div>`;
 }
+

@@ -925,6 +925,8 @@ ul{list-style:none}
 .about-image-wrap img { width: 100%; display: block; filter: saturate(1.1); }
 
 .credit-badge {
+  text-decoration: none;
+  transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1091,3 +1093,5 @@ ul{list-style:none}
   display: inline-block; padding: 2px 8px; background: rgba(20, 184, 166, 0.1); 
   color: var(--teal-dark); border-radius: 4px; font-size: 0.75rem; margin-top: 6px; font-weight: 700;
 }
+
+.credit-badge:hover { background: rgba(20,184,166,0.1); border-color: var(--teal-light); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(20,184,166,0.2); }
