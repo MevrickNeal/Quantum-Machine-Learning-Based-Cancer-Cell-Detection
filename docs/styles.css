@@ -102,13 +102,10 @@ ul{list-style:none}
   padding: 10px 4%; background: rgba(6,6,16,0.8);
   backdrop-filter: blur(20px); border-bottom: 1px solid var(--border);
 }
-.nav-links { display: flex; align-items: center; gap: 12px; }
-@media (max-width: 1000px) {
+.nav-links { display: flex; align-items: center; gap: 15px; }
+@media (max-width: 800px) {
   .nav-links { gap: 8px; }
-  .nav-link-hide { font-size: 0.85rem; }
-}
-@media (max-width: 850px) {
-  .nav-link-hide:nth-child(n+4) { display: none; }
+  .nav-link-hide { display: none; }
 }
 @media (max-width: 380px) {
   .nav-logo span { display: none; }
@@ -1095,32 +1092,6 @@ ul{list-style:none}
 .attr-badge { 
   display: inline-block; padding: 2px 8px; background: rgba(20, 184, 166, 0.1); 
   color: var(--teal-dark); border-radius: 4px; font-size: 0.75rem; margin-top: 6px; font-weight: 700;
-}
-/* ─── Institutional Logo & Credits ────────────────────────────────────────── */
-.school-logo {
-  height: 48px; width: auto; 
-  filter: drop-shadow(0 0 10px rgba(255,255,255,0.2));
-  transition: transform .3s ease;
-}
-.school-logo:hover { transform: scale(1.05); }
-
-.credit-badge {
-  text-decoration: none;
-  transition: all 0.3s ease;
-  display: flex; align-items: center; gap: 16px;
-  background: var(--glass); border: 1px solid var(--border);
-  padding: 12px 20px; border-radius: 99px;
-  margin-top: 24px; box-shadow: var(--shadow);
-  font-weight: 700; color: var(--text2);
-  backdrop-filter: var(--glass-blur);
-}
-.credit-badge span { font-size: 0.9rem; letter-spacing: 0.02em; }
-
-@media (max-width: 600px) {
-  .credit-badge {
-  text-decoration: none;
-  transition: all 0.3s ease; flex-direction: column; text-align: center; border-radius: 24px; padding: 20px; }
-  .school-logo { height: 60px; }
 }
 
 .credit-badge:hover { background: rgba(20,184,166,0.1); border-color: var(--teal-light); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(20,184,166,0.2); }
