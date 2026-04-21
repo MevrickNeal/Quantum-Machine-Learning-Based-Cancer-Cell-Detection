@@ -91,6 +91,24 @@ if OUT_DIR.exists():
         print(f"[api] Warning: Could not mount assets: {e}")
 
 
+# Serve frontend (docs/) over HTTP - fixes canvas getImageData on file:// origins
+from fastapi.responses import HTMLResponse
+DOCS_DIR = ROOT.parent / "docs"
+
+@app.get("/app", response_class=HTMLResponse, include_in_schema=False)
+def serve_frontend():
+    idx = DOCS_DIR / "index.html"
+    if idx.exists():
+        return HTMLResponse(content=idx.read_text(encoding="utf-8"))
+    return HTMLResponse(content="<h1>Frontend not found.</h1>", status_code=404)
+
+if DOCS_DIR.exists():
+    try:
+        app.mount("/static", StaticFiles(directory=str(DOCS_DIR)), name="frontend")
+    except Exception as e:
+        print(f"[api] Warning: Could not mount frontend: {e}")
+
+
 # ─── Schemas ──────────────────────────────────────────────────────────────────
 
 class ClinicalInput(BaseModel):
