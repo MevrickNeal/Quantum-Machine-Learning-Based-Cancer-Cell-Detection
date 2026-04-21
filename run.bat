@@ -5,45 +5,41 @@ color 0A
 echo.
 echo  ========================================================
 echo   LeukoQ - Quantum Blood Cancer Detection Platform
-echo   Starting Local Server...
 echo  ========================================================
 echo.
 
-:: Check venv exists
 if not exist venv (
-    echo  [ERROR] venv not found. Please run setup.bat first!
+    echo  [ERROR] Run setup.bat first!
     pause
     exit /b 1
 )
 
-:: Activate venv
 call venv\Scripts\activate.bat
 
-echo  [1/2] Starting API + Frontend on http://127.0.0.1:8888 ...
-echo.
-
-:: Start backend (serves BOTH the API and the frontend at /app)
+echo  [1/3] Starting API backend on http://127.0.0.1:8888 ...
 start "LeukoQ API" cmd /k "call venv\Scripts\activate.bat && cd backend && uvicorn api:app --host 127.0.0.1 --port 8888 --reload"
 
-:: Wait for server to boot
+echo  [2/3] Starting Frontend server on http://127.0.0.1:8080 ...
+start "LeukoQ Frontend" cmd /k "python -m http.server 8080 --directory docs"
+
 timeout /t 4 /nobreak >nul
 
-echo  [2/2] Opening LeukoQ in your browser...
+echo  [3/3] Opening browser...
+start "" "http://127.0.0.1:8080"
+
 echo.
-
-:: Open frontend served over HTTP (not file://) - fixes image analysis
-start "" "http://127.0.0.1:8888/app"
-
 echo  ========================================================
-echo   LeukoQ is LIVE!
-echo   Open this URL:  http://127.0.0.1:8888/app
+echo   LeukoQ is LIVE at: http://127.0.0.1:8080
+echo   API running at:    http://127.0.0.1:8888
 echo.
-echo   Press any key to STOP the server.
+echo   Image analysis now works (served over HTTP, not file://)
+echo.
+echo   Press any key to STOP both servers.
 echo  ========================================================
 echo.
 pause
 
-:: Kill API window
 taskkill /fi "WindowTitle eq LeukoQ API" /f >nul 2>&1
-echo  [OK] Server stopped.
+taskkill /fi "WindowTitle eq LeukoQ Frontend" /f >nul 2>&1
+echo  [OK] Servers stopped.
 pause
